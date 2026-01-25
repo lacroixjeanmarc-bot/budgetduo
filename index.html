@@ -585,14 +585,14 @@
 
         // REMPLACE avec ta configuration Firebase
         const firebaseConfig = {
-  apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
-  authDomain: "budgetduo-96f22.firebaseapp.com",
-  databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
-  projectId: "budgetduo-96f22",
-  storageBucket: "budgetduo-96f22.firebasestorage.app",
-  messagingSenderId: "44840005819",
-  appId: "1:44840005819:web:5344367cda9a500a4a799e"
-};
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "VOTRE_AUTH_DOMAIN",
+            databaseURL: "VOTRE_DATABASE_URL",
+            projectId: "VOTRE_PROJECT_ID",
+            storageBucket: "VOTRE_STORAGE_BUCKET",
+            messagingSenderId: "VOTRE_MESSAGING_SENDER_ID",
+            appId: "VOTRE_APP_ID"
+        };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -606,7 +606,9 @@
             const [currentMonth, setCurrentMonth] = useState(new Date());
             const [showModal, setShowModal] = useState(false);
             const [showSettings, setShowSettings] = useState(false);
+            const [showEditModal, setShowEditModal] = useState(false);
             const [isConnected, setIsConnected] = useState(false);
+            const [editingTransaction, setEditingTransaction] = useState(null);
 
             const [formData, setFormData] = useState({
                 type: 'shared',
@@ -699,6 +701,33 @@
                     const transactionRef = database.ref(`rooms/${roomCode}/transactions/${transId}`);
                     transactionRef.remove();
                 }
+            };
+
+            const editTransaction = (trans) => {
+                setEditingTransaction(trans);
+                setShowEditModal(true);
+            };
+
+            const updateTransaction = (e) => {
+                e.preventDefault();
+                
+                if (!editingTransaction) return;
+
+                const updatedTransaction = {
+                    ...editingTransaction,
+                    type: editingTransaction.type,
+                    amount: parseFloat(editingTransaction.amount),
+                    vendor: editingTransaction.vendor,
+                    category: editingTransaction.category,
+                    payer: editingTransaction.payer,
+                    date: editingTransaction.date,
+                };
+
+                const transactionRef = database.ref(`rooms/${roomCode}/transactions/${editingTransaction.id}`);
+                transactionRef.set(updatedTransaction);
+
+                setShowEditModal(false);
+                setEditingTransaction(null);
             };
 
             const calculateBalance = () => {
@@ -888,7 +917,29 @@
                                 <div key={trans.id} className="transaction-item" onDoubleClick={() => deleteTransaction(trans.id)}>
                                     <div className="transaction-header">
                                         <div className="transaction-type">{getTypeLabel(trans.type)}</div>
-                                        <div className="transaction-amount">{trans.amount.toFixed(2)} $</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    editTransaction(trans);
+                                                }}
+                                                style={{
+                                                    background: 'rgba(255, 255, 255, 0.1)',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    padding: '6px 12px',
+                                                    color: 'var(--accent-blue)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.9rem',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                onMouseOver={(e) => e.target.style.background = 'rgba(79, 195, 247, 0.2)'}
+                                                onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
+                                            >
+                                                ✏️ Modifier
+                                            </button>
+                                            <div className="transaction-amount">{trans.amount.toFixed(2)} $</div>
+                                        </div>
                                     </div>
                                     <div className="transaction-details">
                                         <div className="transaction-detail">
@@ -908,6 +959,14 @@
                                             <span>📅</span>
                                             <span>{new Date(trans.date).toLocaleDateString('fr-FR')}</span>
                                         </div>
+                                    </div>
+                                    <div style={{ 
+                                        marginTop: '10px', 
+                                        fontSize: '0.75rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontStyle: 'italic' 
+                                    }}>
+                                        💡 Double-clic pour supprimer
                                     </div>
                                 </div>
                             ))
@@ -1028,6 +1087,110 @@
                                 <button className="btn btn-secondary" style={{ marginTop: '15px' }} onClick={() => setShowSettings(false)}>
                                     Fermer
                                 </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showEditModal && editingTransaction && (
+                        <div className="modal" onClick={() => setShowEditModal(false)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <h2 className="modal-header">✏️ Modifier la transaction</h2>
+                                <form onSubmit={updateTransaction}>
+                                    <div className="input-group">
+                                        <label>Type de transaction</label>
+                                        <select
+                                            value={editingTransaction.type}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, type: e.target.value })}
+                                        >
+                                            <option value="shared">🤝 Partagée (50/50)</option>
+                                            <option value="personal">👤 Personnelle (100%)</option>
+                                            <option value="refund">💰 Remboursement</option>
+                                            <option value="transfer">💸 Transfert</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>Montant</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={editingTransaction.amount}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, amount: e.target.value })}
+                                            placeholder="25.50"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>Marchand</label>
+                                        <input
+                                            type="text"
+                                            value={editingTransaction.vendor}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, vendor: e.target.value })}
+                                            placeholder="IGA, Tim Hortons..."
+                                        />
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>Catégorie</label>
+                                        <select
+                                            value={editingTransaction.category}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, category: e.target.value })}
+                                        >
+                                            <option value="epicerie">🛒 Épicerie</option>
+                                            <option value="restaurant">🍽️ Restaurant</option>
+                                            <option value="transport">🚗 Transport</option>
+                                            <option value="loisirs">🎮 Loisirs</option>
+                                            <option value="pharmacie">💊 Pharmacie</option>
+                                            <option value="entretien">🔧 Entretien</option>
+                                            <option value="electricite">⚡ Électricité</option>
+                                            <option value="hypotheque">🏠 Hypothèque</option>
+                                            <option value="autre">📦 Autre</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>Qui a payé ?</label>
+                                        <select
+                                            value={editingTransaction.payer}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, payer: e.target.value })}
+                                        >
+                                            <option value={userName}>{userName}</option>
+                                            <option value={partnerName}>{partnerName}</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>Date</label>
+                                        <input
+                                            type="date"
+                                            value={editingTransaction.date ? editingTransaction.date.split('T')[0] : ''}
+                                            onChange={(e) => {
+                                                const newDate = new Date(e.target.value);
+                                                newDate.setHours(12, 0, 0, 0);
+                                                setEditingTransaction({ 
+                                                    ...editingTransaction, 
+                                                    date: newDate.toISOString(),
+                                                    month: newDate.getMonth(),
+                                                    year: newDate.getFullYear()
+                                                });
+                                            }}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="modal-buttons">
+                                        <button type="button" className="btn btn-secondary" onClick={() => {
+                                            setShowEditModal(false);
+                                            setEditingTransaction(null);
+                                        }}>
+                                            Annuler
+                                        </button>
+                                        <button type="submit" className="btn">
+                                            💾 Enregistrer
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     )}
