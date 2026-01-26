@@ -626,6 +626,44 @@
             line-height: 1.4;
         }
 
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .sort-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .sort-select {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sort-select:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
+        }
+
         .sync-status {
             position: fixed;
             bottom: 20px;
@@ -715,6 +753,7 @@
             const [isScanning, setIsScanning] = useState(false);
             const [scannedImage, setScannedImage] = useState(null);
             const [scanResult, setScanResult] = useState(null);
+            const [sortBy, setSortBy] = useState('date-desc');
 
             const VISION_API_KEY = 'AIzaSyDIdcbS0yDHtAgToOMln30DBR75OOuloVM';
 
@@ -1084,6 +1123,29 @@
                 return labels[category] || category;
             };
 
+            const sortTransactions = (transactionsList) => {
+                const sorted = [...transactionsList];
+                
+                switch(sortBy) {
+                    case 'date-desc':
+                        return sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    case 'date-asc':
+                        return sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    case 'amount-desc':
+                        return sorted.sort((a, b) => b.amount - a.amount);
+                    case 'amount-asc':
+                        return sorted.sort((a, b) => a.amount - b.amount);
+                    case 'vendor':
+                        return sorted.sort((a, b) => (a.vendor || '').localeCompare(b.vendor || ''));
+                    case 'category':
+                        return sorted.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+                    case 'payer':
+                        return sorted.sort((a, b) => (a.payer || '').localeCompare(b.payer || ''));
+                    default:
+                        return sorted;
+                }
+            };
+
             const resetApp = () => {
                 if (confirm('Voulez-vous vraiment réinitialiser l\'application ?')) {
                     localStorage.clear();
@@ -1192,13 +1254,32 @@
                             📋 Historique {monthTransactions.length > 0 && `(${monthTransactions.length})`}
                         </div>
 
+                        {monthTransactions.length > 0 && (
+                            <div className="sort-controls">
+                                <span className="sort-label">🔽 Trier par :</span>
+                                <select 
+                                    className="sort-select"
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                >
+                                    <option value="date-desc">📅 Date (plus récent)</option>
+                                    <option value="date-asc">📅 Date (plus ancien)</option>
+                                    <option value="amount-desc">💰 Montant (plus élevé)</option>
+                                    <option value="amount-asc">💰 Montant (plus bas)</option>
+                                    <option value="vendor">🏪 Marchand (A-Z)</option>
+                                    <option value="category">📂 Catégorie (A-Z)</option>
+                                    <option value="payer">👤 Payé par (A-Z)</option>
+                                </select>
+                            </div>
+                        )}
+
                         {monthTransactions.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-state-icon">💭</div>
                                 <div className="empty-state-text">Aucune transaction ce mois-ci</div>
                             </div>
                         ) : (
-                            monthTransactions.map(trans => (
+                            sortTransactions(monthTransactions).map(trans => (
                                 <div key={trans.id} className="transaction-item" onDoubleClick={() => deleteTransaction(trans.id)}>
                                     <div className="transaction-header">
                                         <div className="transaction-type">
