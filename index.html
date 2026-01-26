@@ -725,7 +725,7 @@
         const { useState, useEffect } = React;
 
         // REMPLACE avec ta configuration Firebase
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
   authDomain: "budgetduo-96f22.firebaseapp.com",
   databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
@@ -1225,17 +1225,6 @@
                             {Math.abs(balance) < 0.01 ? '✨ Tout est égal !' :
                              balance > 0 ? `💰 ${partnerName} doit ${Math.abs(balance).toFixed(2)}$ à ${userName}` :
                              `💸 ${userName} doit ${Math.abs(balance).toFixed(2)}$ à ${partnerName}`}
-                        </div>
-
-                        <div className="user-stats">
-                            <div className="user-stat">
-                                <div className="user-stat-label">{userName}</div>
-                                <div className="user-stat-amount">{Math.abs(userTotal).toFixed(2)} $</div>
-                            </div>
-                            <div className="user-stat">
-                                <div className="user-stat-label">{partnerName}</div>
-                                <div className="user-stat-amount">{Math.abs(partnerTotal).toFixed(2)} $</div>
-                            </div>
                         </div>
                     </div>
 
