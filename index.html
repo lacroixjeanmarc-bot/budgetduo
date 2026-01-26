@@ -218,12 +218,71 @@
             border-bottom-color: var(--accent);
         }
 
+        .sort-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .sort-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .sort-select {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
         .balance-section {
             background: var(--bg-secondary);
             padding: 16px;
             border-radius: 8px;
             margin-bottom: 16px;
             border: 1px solid var(--border);
+        }
+
+        .month-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .month-nav button {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .month-nav button:hover {
+            background: var(--bg-primary);
+        }
+
+        .current-month {
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: capitalize;
         }
 
         .balance-header {
@@ -647,6 +706,169 @@
             transform: scale(0.95);
         }
 
+        .category-manager-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .category-manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .category-manager-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .toggle-category-btn {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-category-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .category-item {
+            position: relative;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .category-item-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .category-item-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #DC2626;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-category-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .icon-picker-container {
+            position: relative;
+        }
+
+        .icon-picker {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: var(--bg-primary);
+            transition: all 0.2s;
+        }
+
+        .icon-picker:hover {
+            border-color: var(--accent);
+        }
+
+        .icon-picker-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .icon-option {
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .icon-option:hover {
+            background: var(--bg-secondary);
+        }
+
+        .category-name-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .category-name-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .add-category-btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .add-category-btn:hover {
+            opacity: 0.9;
+        }
+
         .info-message {
             background: rgba(0, 102, 255, 0.1);
             border: 1px solid rgba(0, 102, 255, 0.3);
@@ -704,6 +926,7 @@
             
             const [transactionType, setTransactionType] = useState('expense');
             const [amount, setAmount] = useState('');
+            const [date, setDate] = useState('');
             const [payer, setPayer] = useState('');
             const [beneficiary, setBeneficiary] = useState('');
             const [vendor, setVendor] = useState('');
@@ -719,8 +942,14 @@
             const [showSettings, setShowSettings] = useState(false);
             const [isScanning, setIsScanning] = useState(false);
             const [scanError, setScanError] = useState(null);
+            const [showCategoryManager, setShowCategoryManager] = useState(false);
+            const [newCategoryIcon, setNewCategoryIcon] = useState('📦');
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [showIconPicker, setShowIconPicker] = useState(false);
+            const [currentMonth, setCurrentMonth] = useState(new Date());
+            const [sortBy, setSortBy] = useState('date-desc');
 
-            const categories = {
+            const DEFAULT_CATEGORIES = {
                 groceries: { name: 'Épicerie', icon: '🛒' },
                 restaurant: { name: 'Restaurant', icon: '🍽️' },
                 transport: { name: 'Transport', icon: '🚗' },
@@ -730,6 +959,15 @@
                 bills: { name: 'Factures', icon: '📄' },
                 other: { name: 'Autre', icon: '💳' }
             };
+
+            const AVAILABLE_ICONS = [
+                "🛒", "🍽️", "🚗", "🎬", "⚕️", "🛍️", "📄", "💳",
+                "📦", "✈️", "🎮", "🏋️", "💇", "🐕", "📚", "☕",
+                "🎵", "🛠️", "🏥", "🎁", "🍕", "🎨", "💻", "🏖️",
+                "🔧", "⚡", "🏠", "💊", "🎧", "📱", "🍔", "🌮"
+            ];
+
+            const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
 
             const currencySymbols = {
                 'CAD': 'CA$',
@@ -760,6 +998,14 @@
                     initFirebase();
                 }
             }, [isSetup, sessionCode]);
+
+            // Update date field when current month changes
+            useEffect(() => {
+                const year = currentMonth.getFullYear();
+                const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
+                const day = String(currentMonth.getDate()).padStart(2, '0');
+                setDate(`${year}-${month}-${day}`);
+            }, [currentMonth]);
 
             function initFirebase() {
                 if (!firebase.apps.length) {
@@ -794,7 +1040,23 @@
                     }
                 });
 
-                return () => transactionsRef.off();
+                // Load categories from Firebase
+                const categoriesRef = db.ref(`sessions/${sessionCode}/categories`);
+                categoriesRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        setCategories(data);
+                    } else {
+                        // Initialize with default categories
+                        categoriesRef.set(DEFAULT_CATEGORIES);
+                        setCategories(DEFAULT_CATEGORIES);
+                    }
+                });
+
+                return () => {
+                    transactionsRef.off();
+                    categoriesRef.off();
+                };
             }
 
             function handleSetup(e) {
@@ -972,12 +1234,42 @@
                 setPhotos(photos.filter((_, i) => i !== index));
             }
 
+            function addCategory() {
+                if (!newCategoryName.trim()) return;
+
+                const categoryId = newCategoryName.toLowerCase().replace(/\s+/g, '_');
+                const newCategory = {
+                    icon: newCategoryIcon,
+                    name: newCategoryName.trim()
+                };
+
+                const categoryRef = database.ref(`sessions/${sessionCode}/categories/${categoryId}`);
+                categoryRef.set(newCategory);
+
+                setNewCategoryName('');
+                setNewCategoryIcon('📦');
+                setShowIconPicker(false);
+            }
+
+            function removeCategory(categoryId) {
+                if (Object.keys(DEFAULT_CATEGORIES).includes(categoryId)) {
+                    alert('Impossible de supprimer une catégorie par défaut');
+                    return;
+                }
+
+                if (confirm('Supprimer cette catégorie ?')) {
+                    const categoryRef = database.ref(`sessions/${sessionCode}/categories/${categoryId}`);
+                    categoryRef.remove();
+                }
+            }
+
             async function addTransaction(e) {
                 e.preventDefault();
                 
                 console.log('=== DEBUG ADD TRANSACTION ===');
                 console.log('Type:', transactionType);
                 console.log('Amount:', amount);
+                console.log('Date:', date);
                 console.log('Payer:', payer);
                 console.log('IsShared:', isShared);
                 console.log('UserShare:', userShare);
@@ -987,7 +1279,7 @@
                 
                 const newTransaction = {
                     type: transactionType,
-                    date: new Date().toISOString(),
+                    date: new Date(date).toISOString(),
                     amount: parseFloat(amount),
                     payer,
                     vendor: vendor || 'Sans nom',
@@ -1048,11 +1340,27 @@
             }
 
             function calculateBalances() {
+                // Filter transactions for the current month
+                const monthTransactions = transactions.filter(t => {
+                    const transDate = new Date(t.date);
+                    return transDate.getMonth() === currentMonth.getMonth() &&
+                           transDate.getFullYear() === currentMonth.getFullYear();
+                });
+
                 let userBalance = 0;
                 let partnerBalance = 0;
+                let userPaid = 0;
+                let partnerPaid = 0;
 
-                transactions.forEach(trans => {
+                monthTransactions.forEach(trans => {
                     const amount = parseFloat(trans.amount);
+                    
+                    // Track total paid by each person
+                    if (trans.payer === userName) {
+                        userPaid += amount;
+                    } else if (trans.payer === partnerName) {
+                        partnerPaid += amount;
+                    }
                     
                     if (trans.type === 'expense') {
                         // Dépense normale
@@ -1106,7 +1414,38 @@
                     }
                 });
 
-                return { userBalance, partnerBalance };
+                return { userBalance, partnerBalance, userPaid, partnerPaid, monthTransactions };
+            }
+
+            function changeMonth(delta) {
+                const newMonth = new Date(currentMonth);
+                newMonth.setMonth(newMonth.getMonth() + delta);
+                setCurrentMonth(newMonth);
+            }
+
+            function formatMonth(date) {
+                return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+            }
+
+            function sortTransactions(trans) {
+                const sorted = [...trans];
+                
+                switch(sortBy) {
+                    case 'date-desc':
+                        return sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    case 'date-asc':
+                        return sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    case 'amount-desc':
+                        return sorted.sort((a, b) => b.amount - a.amount);
+                    case 'amount-asc':
+                        return sorted.sort((a, b) => a.amount - b.amount);
+                    case 'vendor':
+                        return sorted.sort((a, b) => a.vendor.localeCompare(b.vendor));
+                    case 'payer':
+                        return sorted.sort((a, b) => a.payer.localeCompare(b.payer));
+                    default:
+                        return sorted;
+                }
             }
 
             function resetApp() {
@@ -1175,7 +1514,7 @@
                 );
             }
 
-            const { userBalance, partnerBalance } = calculateBalances();
+            const { userBalance, partnerBalance, userPaid, partnerPaid, monthTransactions } = calculateBalances();
             const netBalance = userBalance;
 
             return (
@@ -1186,8 +1525,14 @@
                     </div>
 
                     <div className="balance-section">
+                        <div className="month-nav">
+                            <button onClick={() => changeMonth(-1)}>◀</button>
+                            <div className="current-month">{formatMonth(currentMonth)}</div>
+                            <button onClick={() => changeMonth(1)}>▶</button>
+                        </div>
+
                         <div className="balance-header">
-                            <div className="balance-title">Balance</div>
+                            <div className="balance-title">Balance du mois</div>
                             <div className={`balance-amount ${netBalance > 0 ? 'positive' : netBalance < 0 ? 'negative' : 'zero'}`}>
                                 {netBalance > 0 ? '+' : ''}{currencySymbols[currency]}{Math.abs(netBalance).toFixed(2)}
                             </div>
@@ -1202,15 +1547,15 @@
 
                         <div className="balance-details">
                             <div className="balance-item">
-                                <div className="balance-item-label">{userName}</div>
+                                <div className="balance-item-label">{userName} a payé</div>
                                 <div className="balance-item-value">
-                                    {currencySymbols[currency]}{userBalance.toFixed(2)}
+                                    {currencySymbols[currency]}{userPaid.toFixed(2)}
                                 </div>
                             </div>
                             <div className="balance-item">
-                                <div className="balance-item-label">{partnerName}</div>
+                                <div className="balance-item-label">{partnerName} a payé</div>
                                 <div className="balance-item-value">
-                                    {currencySymbols[currency]}{partnerBalance.toFixed(2)}
+                                    {currencySymbols[currency]}{partnerPaid.toFixed(2)}
                                 </div>
                             </div>
                         </div>
@@ -1340,6 +1685,16 @@
                                     />
                                 </div>
 
+                                <div className="input-group">
+                                    <label>Date</label>
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
                                 <div className="form-row">
                                     <div className="input-group">
                                         <label>{transactionType === 'income' ? 'Reçu par' : 'Payé par'}</label>
@@ -1443,47 +1798,66 @@
 
                     {activeTab === 'list' && (
                         <div className="transaction-list">
-                            {transactions.length === 0 ? (
+                            {monthTransactions.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-                                    Aucune transaction
+                                    Aucune transaction ce mois-ci
                                 </div>
                             ) : (
-                                transactions.map(trans => {
-                                    const typeLabels = {
-                                        expense: 'Dépense',
-                                        income: 'Revenu',
-                                        transfer: 'Transfert'
-                                    };
+                                <>
+                                    <div className="sort-bar">
+                                        <span className="sort-label">{monthTransactions.length} transaction{monthTransactions.length > 1 ? 's' : ''}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span className="sort-label">Trier par:</span>
+                                            <select 
+                                                className="sort-select"
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value)}
+                                            >
+                                                <option value="date-desc">Date (récent)</option>
+                                                <option value="date-asc">Date (ancien)</option>
+                                                <option value="amount-desc">Montant (↓)</option>
+                                                <option value="amount-asc">Montant (↑)</option>
+                                                <option value="vendor">Marchand (A-Z)</option>
+                                                <option value="payer">Payeur (A-Z)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {sortTransactions(monthTransactions).map(trans => {
+                                        const typeLabels = {
+                                            expense: 'Dépense',
+                                            income: 'Revenu',
+                                            transfer: 'Transfert'
+                                        };
 
-                                    return (
-                                        <div key={trans.id} className={`transaction-item ${trans.type || 'expense'}`}>
-                                            <div className="transaction-header">
-                                                <div className="transaction-vendor">
-                                                    <span>{trans.vendor}</span>
-                                                    <span className={`transaction-type-badge ${trans.type || 'expense'}`}>
-                                                        {typeLabels[trans.type || 'expense']}
-                                                    </span>
+                                        return (
+                                            <div key={trans.id} className={`transaction-item ${trans.type || 'expense'}`}>
+                                                <div className="transaction-header">
+                                                    <div className="transaction-vendor">
+                                                        <span>{trans.vendor}</span>
+                                                        <span className={`transaction-type-badge ${trans.type || 'expense'}`}>
+                                                            {typeLabels[trans.type || 'expense']}
+                                                        </span>
+                                                    </div>
+                                                    <div className="transaction-amount">
+                                                        {currencySymbols[currency]}{trans.amount.toFixed(2)}
+                                                    </div>
                                                 </div>
-                                                <div className="transaction-amount">
-                                                    {currencySymbols[currency]}{trans.amount.toFixed(2)}
-                                                </div>
-                                            </div>
 
-                                            <div className="transaction-details">
-                                                <span className="transaction-detail">
-                                                    📅 {new Date(trans.date).toLocaleDateString('fr-CA')}
-                                                </span>
-                                                <span className="transaction-detail">
-                                                    👤 {trans.payer}
-                                                </span>
-                                                {trans.type === 'transfer' && (
+                                                <div className="transaction-details">
                                                     <span className="transaction-detail">
-                                                        → {trans.beneficiary}
+                                                        📅 {new Date(trans.date).toLocaleDateString('fr-CA')}
                                                     </span>
-                                                )}
-                                                {trans.isShared && trans.type !== 'transfer' && (
                                                     <span className="transaction-detail">
-                                                        🔀 {userName}: {currencySymbols[currency]}{trans.userShare} | {partnerName}: {currencySymbols[currency]}{trans.partnerShare}
+                                                        👤 {trans.payer}
+                                                    </span>
+                                                    {trans.type === 'transfer' && (
+                                                        <span className="transaction-detail">
+                                                            → {trans.beneficiary}
+                                                        </span>
+                                                    )}
+                                                    {trans.isShared && trans.type !== 'transfer' && (
+                                                        <span className="transaction-detail">
+                                                            🔀 {userName}: {currencySymbols[currency]}{trans.userShare} | {partnerName}: {currencySymbols[currency]}{trans.partnerShare}
                                                     </span>
                                                 )}
                                                 {!trans.isShared && trans.type !== 'transfer' && (
@@ -1529,7 +1903,8 @@
                                             </div>
                                         </div>
                                     );
-                                })
+                                    })}
+                                </>
                             )}
                         </div>
                     )}
@@ -1547,6 +1922,88 @@
                                     <p><strong>Utilisateurs:</strong> {userName} & {partnerName}</p>
                                     <p><strong>Devise:</strong> {currency}</p>
                                 </div>
+
+                                <div className="category-manager-section">
+                                    <div className="category-manager-header">
+                                        <h3>Gestion des catégories</h3>
+                                        <button 
+                                            className="toggle-category-btn"
+                                            onClick={() => setShowCategoryManager(!showCategoryManager)}
+                                        >
+                                            {showCategoryManager ? '▼ Masquer' : '▶ Afficher'}
+                                        </button>
+                                    </div>
+
+                                    {showCategoryManager && (
+                                        <>
+                                            <div className="category-grid">
+                                                {Object.entries(categories).map(([id, cat]) => (
+                                                    <div key={id} className="category-item">
+                                                        <div className="category-item-icon">{cat.icon}</div>
+                                                        <div>{cat.name}</div>
+                                                        {!Object.keys(DEFAULT_CATEGORIES).includes(id) && (
+                                                            <button
+                                                                type="button"
+                                                                className="category-item-remove"
+                                                                onClick={() => removeCategory(id)}
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="add-category-form">
+                                                <div className="icon-picker-container">
+                                                    <div 
+                                                        className="icon-picker"
+                                                        onClick={() => setShowIconPicker(!showIconPicker)}
+                                                    >
+                                                        {newCategoryIcon}
+                                                    </div>
+                                                    {showIconPicker && (
+                                                        <div className="icon-picker-dropdown">
+                                                            {AVAILABLE_ICONS.map((icon, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="icon-option"
+                                                                    onClick={() => {
+                                                                        setNewCategoryIcon(icon);
+                                                                        setShowIconPicker(false);
+                                                                    }}
+                                                                >
+                                                                    {icon}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    className="category-name-input"
+                                                    value={newCategoryName}
+                                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                                    placeholder="Nom de la catégorie..."
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addCategory();
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="add-category-btn"
+                                                    onClick={addCategory}
+                                                >
+                                                    + Ajouter
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
                                 <button className="btn btn-danger" onClick={resetApp}>
                                     Réinitialiser l'application
                                 </button>
