@@ -706,6 +706,69 @@
             transform: scale(0.95);
         }
 
+        .help-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .help-button:hover {
+            transform: scale(1.05);
+            background: var(--accent);
+            color: white;
+        }
+
+        .help-button:active {
+            transform: scale(0.95);
+        }
+
+        .help-section {
+            margin-bottom: 20px;
+        }
+
+        .help-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .help-section p {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .help-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-features li {
+            padding: 6px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .help-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
         .category-manager-section {
             margin-top: 20px;
             padding-top: 20px;
@@ -948,6 +1011,7 @@
             const [showIconPicker, setShowIconPicker] = useState(false);
             const [currentMonth, setCurrentMonth] = useState(new Date());
             const [sortBy, setSortBy] = useState('date-desc');
+            const [showHelp, setShowHelp] = useState(false);
 
             const DEFAULT_CATEGORIES = {
                 groceries: { name: 'Épicerie', icon: '🛒' },
@@ -1455,6 +1519,55 @@
                 }
             }
 
+            function exportToExcel() {
+                if (transactions.length === 0) {
+                    alert('Aucune transaction à exporter');
+                    return;
+                }
+
+                // Create CSV content
+                let csv = '\ufeff'; // BOM for UTF-8
+                
+                // Headers
+                csv += 'Date,Type,Montant,Devise,Payé par,Marchand,Catégorie,Partagé,Part ' + userName + ',Part ' + partnerName + ',Bénéficiaire,Photos\n';
+                
+                // Data rows
+                transactions.forEach(trans => {
+                    const date = new Date(trans.date).toLocaleDateString('fr-CA');
+                    const typeLabels = {
+                        expense: 'Dépense',
+                        income: 'Revenu',
+                        transfer: 'Transfert'
+                    };
+                    const type = typeLabels[trans.type || 'expense'];
+                    const amount = trans.amount.toFixed(2);
+                    const payer = trans.payer;
+                    const vendor = (trans.vendor || '').replace(/,/g, ';'); // Replace commas
+                    const category = categories[trans.category]?.name || trans.category;
+                    const isShared = trans.isShared ? 'Oui' : 'Non';
+                    const userShare = trans.userShare ? trans.userShare.toFixed(2) : '';
+                    const partnerShare = trans.partnerShare ? trans.partnerShare.toFixed(2) : '';
+                    const beneficiary = trans.beneficiary || '';
+                    const photos = trans.photos ? trans.photos.length : '0';
+                    
+                    csv += `${date},${type},${amount},${currency},${payer},"${vendor}",${category},${isShared},${userShare},${partnerShare},${beneficiary},${photos}\n`;
+                });
+                
+                // Create download link
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                const filename = `BudgetDuo_${userName}_${partnerName}_${new Date().toISOString().split('T')[0]}.csv`;
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
             if (!isSetup) {
                 return (
                     <div className="app-container">
@@ -1807,6 +1920,13 @@
                                     <div className="sort-bar">
                                         <span className="sort-label">{monthTransactions.length} transaction{monthTransactions.length > 1 ? 's' : ''}</span>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <button 
+                                                className="btn-small"
+                                                onClick={exportToExcel}
+                                                title="Télécharger toutes les transactions en Excel"
+                                            >
+                                                📊 Excel
+                                            </button>
                                             <span className="sort-label">Trier par:</span>
                                             <select 
                                                 className="sort-select"
@@ -1909,9 +2029,69 @@
                         </div>
                     )}
 
+                    <button className="help-button" onClick={() => setShowHelp(true)}>
+                        ?
+                    </button>
+
                     <button className="settings-button" onClick={() => setShowSettings(true)}>
                         ⚙️
                     </button>
+
+                    {showHelp && (
+                        <div className="modal" onClick={() => setShowHelp(false)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <h2 className="modal-header">À propos de BudgetDuo</h2>
+                                
+                                <div className="help-section">
+                                    <h3>🎯 Qu'est-ce que BudgetDuo ?</h3>
+                                    <p>
+                                        BudgetDuo est une application web conçue pour faciliter la gestion des dépenses 
+                                        partagées entre deux personnes (couple, colocataires, amis). Toutes vos données 
+                                        sont synchronisées en temps réel entre vos appareils grâce à Firebase.
+                                    </p>
+                                </div>
+
+                                <div className="help-section">
+                                    <h3>✨ Fonctionnalités principales</h3>
+                                    <ul className="help-features">
+                                        <li><strong>3 types de transactions :</strong> Dépenses (argent dépensé), Revenus (argent reçu à partager), Transferts (paiements directs entre vous)</li>
+                                        <li><strong>Scan de reçus :</strong> Prenez une photo du reçu et l'application extrait automatiquement le montant et le marchand grâce à Google Vision AI</li>
+                                        <li><strong>Navigation par mois :</strong> Consultez vos dépenses mois par mois avec la balance du mois</li>
+                                        <li><strong>Partage personnalisé :</strong> Divisez les dépenses 50/50 ou avec des montants personnalisés</li>
+                                        <li><strong>Catégories personnalisables :</strong> Créez vos propres catégories avec des icônes</li>
+                                        <li><strong>Multi-photos :</strong> Attachez jusqu'à 3 photos par transaction</li>
+                                        <li><strong>Tri flexible :</strong> Triez vos transactions par date, montant, marchand ou payeur</li>
+                                        <li><strong>Export Excel :</strong> Téléchargez toutes vos transactions en format CSV pour analyse</li>
+                                        <li><strong>Multi-devises :</strong> Support pour CAD, USD, EUR, GBP</li>
+                                        <li><strong>Synchronisation temps réel :</strong> Les changements apparaissent instantanément sur tous les appareils</li>
+                                    </ul>
+                                </div>
+
+                                <div className="help-section">
+                                    <h3>🚀 Comment démarrer ?</h3>
+                                    <p>
+                                        1. Créez un <strong>code de session</strong> unique (ex: COUPLE2024)<br/>
+                                        2. Partagez ce code avec votre partenaire<br/>
+                                        3. Tous les deux, utilisez le même code pour accéder aux mêmes données<br/>
+                                        4. Ajoutez vos transactions et voyez la balance en temps réel !
+                                    </p>
+                                </div>
+
+                                <div className="help-section">
+                                    <h3>💡 Astuce</h3>
+                                    <p>
+                                        Pour ajouter rapidement une transaction : prenez une photo du reçu, 
+                                        vérifiez les informations extraites automatiquement, ajustez si nécessaire, 
+                                        et cliquez sur Ajouter !
+                                    </p>
+                                </div>
+
+                                <button className="btn" onClick={() => setShowHelp(false)}>
+                                    Compris !
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {showSettings && (
                         <div className="modal" onClick={() => setShowSettings(false)}>
@@ -2004,12 +2184,38 @@
                                     )}
                                 </div>
 
+                                <button className="btn" onClick={exportToExcel} style={{ marginBottom: '8px' }}>
+                                    📊 Télécharger en Excel
+                                </button>
                                 <button className="btn btn-danger" onClick={resetApp}>
                                     Réinitialiser l'application
                                 </button>
                                 <button className="btn btn-secondary" onClick={() => setShowSettings(false)} style={{ marginTop: '8px' }}>
                                     Fermer
                                 </button>
+
+                                <div style={{ 
+                                    marginTop: '24px', 
+                                    paddingTop: '16px', 
+                                    borderTop: '1px solid var(--border)', 
+                                    textAlign: 'center',
+                                    fontSize: '0.85rem',
+                                    color: 'var(--text-secondary)'
+                                }}>
+                                    <div style={{ marginBottom: '4px' }}>📱 BudgetDuo v1.0</div>
+                                    <div style={{ marginBottom: '4px' }}>Développé par Jean-Marc Lacroix</div>
+                                    <div>Vos commentaires sont les bienvenus :</div>
+                                    <a 
+                                        href="mailto:lacroix.jeanmarc@gmail.com" 
+                                        style={{ 
+                                            color: 'var(--accent)', 
+                                            textDecoration: 'none',
+                                            fontWeight: '500'
+                                        }}
+                                    >
+                                        lacroix.jeanmarc@gmail.com
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     )}
