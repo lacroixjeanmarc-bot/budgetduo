@@ -664,6 +664,136 @@
             box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
         }
 
+        .photo-gallery {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .photo-thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .photo-thumbnail:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-pink);
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .photo-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .photo-modal-image {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .photo-modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-modal-close:hover {
+            background: rgba(255, 107, 157, 0.8);
+        }
+
+        .add-photo-btn {
+            background: rgba(79, 195, 247, 0.2);
+            border: 2px dashed var(--accent-blue);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: var(--accent-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .add-photo-btn:hover {
+            background: rgba(79, 195, 247, 0.3);
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
+        }
+
+        .photo-preview-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .photo-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .photo-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .photo-preview-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .photo-preview-remove:hover {
+            background: #dc2626;
+        }
+
         .sync-status {
             position: fixed;
             bottom: 20px;
@@ -754,6 +884,8 @@
             const [scannedImage, setScannedImage] = useState(null);
             const [scanResult, setScanResult] = useState(null);
             const [sortBy, setSortBy] = useState('date-desc');
+            const [transactionPhotos, setTransactionPhotos] = useState([]);
+            const [viewingPhoto, setViewingPhoto] = useState(null);
 
             const VISION_API_KEY = 'AIzaSyDIdcbS0yDHtAgToOMln30DBR75OOuloVM';
 
@@ -766,7 +898,8 @@
                 beneficiary: '',
                 userShare: '',
                 partnerShare: '',
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                photos: []
             });
 
             useEffect(() => {
@@ -871,7 +1004,8 @@
                     partnerShare: partnerShare,
                     date: transactionDate.toISOString(),
                     month: transactionDate.getMonth(),
-                    year: transactionDate.getFullYear()
+                    year: transactionDate.getFullYear(),
+                    photos: transactionPhotos
                 };
 
                 const transactionsRef = database.ref(`rooms/${roomCode}/transactions/${newTransaction.id}`);
@@ -886,8 +1020,12 @@
                     beneficiary: formData.payer === userName ? partnerName : userName,
                     userShare: '',
                     partnerShare: '',
-                    date: new Date().toISOString().split('T')[0]
+                    date: new Date().toISOString().split('T')[0],
+                    photos: []
                 });
+                setTransactionPhotos([]);
+                setScannedImage(null);
+                setScanResult(null);
                 setShowModal(false);
             };
 
@@ -948,17 +1086,32 @@
                 setEditingTransaction(null);
             };
 
-            const handleImageCapture = (e) => {
+            const handleImageCapture = (e, shouldScan = true) => {
                 const file = e.target.files[0];
                 if (!file) return;
 
+                if (transactionPhotos.length >= 3) {
+                    alert('Maximum 3 photos par transaction');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const base64Image = event.target.result.split(',')[1];
-                    setScannedImage(event.target.result);
-                    scanReceipt(base64Image);
+                    const base64Full = event.target.result;
+                    const base64Image = base64Full.split(',')[1];
+                    
+                    setTransactionPhotos(prev => [...prev, base64Full]);
+                    
+                    if (shouldScan) {
+                        setScannedImage(base64Full);
+                        scanReceipt(base64Image);
+                    }
                 };
                 reader.readAsDataURL(file);
+            };
+
+            const removePhoto = (index) => {
+                setTransactionPhotos(prev => prev.filter((_, i) => i !== index));
             };
 
             const scanReceipt = async (base64Image) => {
@@ -1325,6 +1478,19 @@
                                             Part {userName}: {trans.userShare?.toFixed(2)}$ • Part {partnerName}: {trans.partnerShare?.toFixed(2)}$
                                         </div>
                                     )}
+                                    {trans.photos && trans.photos.length > 0 && (
+                                        <div className="photo-gallery">
+                                            {trans.photos.map((photo, idx) => (
+                                                <img 
+                                                    key={idx}
+                                                    src={photo}
+                                                    alt={`Reçu ${idx + 1}`}
+                                                    className="photo-thumbnail"
+                                                    onClick={() => setViewingPhoto(photo)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                     <div style={{ 
                                         marginTop: '10px', 
                                         fontSize: '0.75rem', 
@@ -1389,6 +1555,39 @@
                                         <div className="scan-result-title" style={{ color: '#ef4444' }}>❌ Erreur</div>
                                         <div className="scan-result-text">{scanResult.error}</div>
                                     </div>
+                                )}
+
+                                {transactionPhotos.length > 0 && (
+                                    <div className="photo-preview-container">
+                                        {transactionPhotos.map((photo, idx) => (
+                                            <div key={idx} className="photo-preview-item">
+                                                <img src={photo} alt={`Photo ${idx + 1}`} className="photo-preview-img" />
+                                                <button 
+                                                    type="button"
+                                                    className="photo-preview-remove"
+                                                    onClick={() => removePhoto(idx)}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {transactionPhotos.length < 3 && (
+                                    <>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            onChange={(e) => handleImageCapture(e, false)}
+                                            style={{ display: 'none' }}
+                                            id="add-photo-input"
+                                        />
+                                        <label htmlFor="add-photo-input" className="add-photo-btn">
+                                            📷 Ajouter une photo ({transactionPhotos.length}/3)
+                                        </label>
+                                    </>
                                 )}
 
                                 <form onSubmit={addTransaction}>
@@ -1716,6 +1915,17 @@
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {viewingPhoto && (
+                        <div className="photo-modal" onClick={() => setViewingPhoto(null)}>
+                            <div className="photo-modal-content" onClick={(e) => e.stopPropagation()}>
+                                <button className="photo-modal-close" onClick={() => setViewingPhoto(null)}>
+                                    ✕ Fermer
+                                </button>
+                                <img src={viewingPhoto} alt="Reçu en grand" className="photo-modal-image" />
                             </div>
                         </div>
                     )}
