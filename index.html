@@ -922,7 +922,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
   authDomain: "budgetduo-96f22.firebaseapp.com",
   databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
@@ -931,7 +931,6 @@
   messagingSenderId: "44840005819",
   appId: "1:44840005819:web:5344367cda9a500a4a799e"
 };
-
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -1951,7 +1950,6 @@
                                                 <option value={partnerName}>{partnerName}</option>
                                             </select>
                                         </div>
-                                        </>
                                     )}
 
                                     {formData.transactionType !== 'transfer' && (
@@ -2209,7 +2207,6 @@
                                                 <option value={partnerName}>{partnerName}</option>
                                             </select>
                                         </div>
-                                        </>
                                     )}
 
                                     {formData.transactionType !== 'transfer' && (
