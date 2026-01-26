@@ -696,6 +696,7 @@
   messagingSenderId: "44840005819",
   appId: "1:44840005819:web:5344367cda9a500a4a799e"
 };
+
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -961,7 +962,6 @@
                 let vendor = null;
                 let date = null;
 
-                // Chercher le montant (format: 123.45, 123,45, $123.45, etc.)
                 const amountRegex = /(\$?\s*\d+[.,]\d{2})/g;
                 const amounts = [];
                 
@@ -977,12 +977,10 @@
                     }
                 });
 
-                // Prendre le plus grand montant (souvent le total)
                 if (amounts.length > 0) {
                     amount = Math.max(...amounts);
                 }
 
-                // Chercher le nom du marchand (souvent la première ligne non vide)
                 for (let line of lines) {
                     const trimmed = line.trim();
                     if (trimmed.length > 2 && trimmed.length < 50 && !trimmed.match(/^\d+$/)) {
@@ -991,7 +989,6 @@
                     }
                 }
 
-                // Chercher une date (format: YYYY-MM-DD, DD/MM/YYYY, etc.)
                 const dateRegex = /(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{4}|\d{1,2}[-/]\d{1,2}[-/]\d{2})/;
                 for (let line of lines) {
                     const match = line.match(dateRegex);
@@ -1002,7 +999,7 @@
                                 date = parsedDate.toISOString().split('T')[0];
                             }
                         } catch (e) {
-                            // Ignore invalid dates
+                            // Ignore
                         }
                         break;
                     }
@@ -1010,7 +1007,6 @@
 
                 setScanResult({ amount, vendor, date, fullText: text });
 
-                // Pré-remplir le formulaire avec les valeurs détectées
                 if (amount || vendor || date) {
                     setFormData(prev => ({
                         ...prev,
@@ -1019,16 +1015,6 @@
                         date: date || prev.date
                     }));
                 }
-            };
-                    month: transactionDate.getMonth(),
-                    year: transactionDate.getFullYear()
-                };
-
-                const transactionRef = database.ref(`rooms/${roomCode}/transactions/${editingTransaction.id}`);
-                transactionRef.set(updatedTransaction);
-
-                setShowEditModal(false);
-                setEditingTransaction(null);
             };
 
             const calculateBalance = () => {
