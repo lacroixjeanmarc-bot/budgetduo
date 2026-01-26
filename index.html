@@ -524,21 +524,27 @@
         .photo-upload-area {
             border: 2px dashed var(--border);
             border-radius: 6px;
-            padding: 16px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             margin-bottom: 12px;
+            background: var(--bg-secondary);
         }
 
         .photo-upload-area:hover {
             border-color: var(--accent);
-            background: var(--bg-secondary);
+            background: var(--bg-card);
         }
 
         .photo-upload-area.dragging {
             border-color: var(--accent);
-            background: var(--bg-secondary);
+            background: var(--bg-card);
+        }
+
+        .photo-upload-area div:first-child {
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
         .photo-preview-grid {
@@ -711,6 +717,8 @@
             const [editingTransaction, setEditingTransaction] = useState(null);
             const [viewingPhoto, setViewingPhoto] = useState(null);
             const [showSettings, setShowSettings] = useState(false);
+            const [isScanning, setIsScanning] = useState(false);
+            const [scanError, setScanError] = useState(null);
 
             const categories = {
                 groceries: { name: 'Épicerie', icon: '🛒' },
@@ -823,9 +831,18 @@
             }
 
             async function handlePhotoUpload(files) {
+                if (photos.length >= 3) {
+                    alert('Maximum 3 photos permises');
+                    return;
+                }
+                
                 const newPhotos = [];
                 for (let file of files) {
                     if (file.type.startsWith('image/')) {
+                        if (photos.length + newPhotos.length >= 3) {
+                            alert('Maximum 3 photos permises');
+                            break;
+                        }
                         const reader = new FileReader();
                         const dataUrl = await new Promise((resolve) => {
                             reader.onload = (e) => resolve(e.target.result);
@@ -834,7 +851,107 @@
                         newPhotos.push(dataUrl);
                     }
                 }
-                setPhotos([...photos, ...newPhotos]);
+                
+                const updatedPhotos = [...photos, ...newPhotos];
+                setPhotos(updatedPhotos);
+                
+                // Scan only the first photo with Google Vision
+                if (updatedPhotos.length === newPhotos.length && newPhotos.length > 0) {
+                    await scanReceiptWithVision(newPhotos[0]);
+                }
+            }
+
+            async function scanReceiptWithVision(imageData) {
+                setIsScanning(true);
+                setScanError(null);
+                
+                try {
+                    const base64Image = imageData.split(',')[1];
+                    
+                    const response = await fetch('https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            requests: [{
+                                image: { content: base64Image },
+                                features: [
+                                    { type: 'TEXT_DETECTION' },
+                                    { type: 'DOCUMENT_TEXT_DETECTION' }
+                                ]
+                            }]
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.responses && data.responses[0].textAnnotations) {
+                        const text = data.responses[0].textAnnotations[0].description;
+                        console.log('Texte détecté:', text);
+                        
+                        // Extract amount (chercher des patterns comme 24.99, 24,99, $24.99, etc.)
+                        const amountPatterns = [
+                            /(?:total|montant|amount|subtotal)[\s:]*\$?\s*(\d+[.,]\d{2})/i,
+                            /\$\s*(\d+[.,]\d{2})/,
+                            /(\d+[.,]\d{2})\s*\$/,
+                            /(?:^|\s)(\d+[.,]\d{2})(?:\s|$)/
+                        ];
+                        
+                        let extractedAmount = '';
+                        for (const pattern of amountPatterns) {
+                            const match = text.match(pattern);
+                            if (match) {
+                                extractedAmount = match[1].replace(',', '.');
+                                break;
+                            }
+                        }
+                        
+                        // Extract vendor/merchant name (usually at the top)
+                        const lines = text.split('\n').filter(line => line.trim());
+                        let extractedVendor = '';
+                        if (lines.length > 0) {
+                            // Take first non-empty line as vendor
+                            extractedVendor = lines[0].trim().substring(0, 50);
+                        }
+                        
+                        // Auto-fill the form
+                        if (extractedAmount) {
+                            setAmount(extractedAmount);
+                            if (isShared && transactionType !== 'transfer') {
+                                const amt = parseFloat(extractedAmount) || 0;
+                                setUserShare((amt / 2).toFixed(2));
+                                setPartnerShare((amt / 2).toFixed(2));
+                            }
+                        }
+                        
+                        if (extractedVendor) {
+                            setVendor(extractedVendor);
+                        }
+                        
+                        // Try to detect category based on merchant name
+                        const vendorLower = extractedVendor.toLowerCase();
+                        if (vendorLower.includes('metro') || vendorLower.includes('iga') || 
+                            vendorLower.includes('maxi') || vendorLower.includes('provigo')) {
+                            setCategory('groceries');
+                        } else if (vendorLower.includes('restaurant') || vendorLower.includes('cafe') ||
+                                   vendorLower.includes('tim') || vendorLower.includes('mcdonald')) {
+                            setCategory('restaurant');
+                        } else if (vendorLower.includes('shell') || vendorLower.includes('esso') ||
+                                   vendorLower.includes('petro')) {
+                            setCategory('transport');
+                        }
+                        
+                        console.log('Données extraites:', { amount: extractedAmount, vendor: extractedVendor });
+                    } else {
+                        setScanError('Aucun texte détecté sur le reçu');
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du scan:', error);
+                    setScanError('Erreur lors du scan du reçu');
+                } finally {
+                    setIsScanning(false);
+                }
             }
 
             function removePhoto(index) {
@@ -1165,6 +1282,38 @@
                                     </div>
                                 )}
 
+                                <div className="photo-upload-area" onClick={() => document.getElementById('photo-input').click()}>
+                                    <div>📷 {photos.length > 0 ? `${photos.length}/3 photos` : 'Prendre une photo du reçu'}</div>
+                                    {isScanning && <div style={{fontSize: '0.85rem', color: 'var(--accent)', marginTop: '4px'}}>⏳ Analyse en cours...</div>}
+                                    {scanError && <div style={{fontSize: '0.85rem', color: '#DC2626', marginTop: '4px'}}>{scanError}</div>}
+                                    <input
+                                        id="photo-input"
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        multiple
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => handlePhotoUpload(Array.from(e.target.files))}
+                                    />
+                                </div>
+
+                                {photos.length > 0 && (
+                                    <div className="photo-preview-grid">
+                                        {photos.map((photo, index) => (
+                                            <div key={index} className="photo-preview-item">
+                                                <img src={photo} className="photo-preview" alt={`Photo ${index + 1}`} />
+                                                <button
+                                                    type="button"
+                                                    className="photo-remove"
+                                                    onClick={() => removePhoto(index)}
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="input-group">
                                     <label>Montant</label>
                                     <input
@@ -1272,35 +1421,6 @@
                                         ))}
                                     </select>
                                 </div>
-
-                                <div className="photo-upload-area" onClick={() => document.getElementById('photo-input').click()}>
-                                    <div>📷 Ajouter des photos</div>
-                                    <input
-                                        id="photo-input"
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handlePhotoUpload(Array.from(e.target.files))}
-                                    />
-                                </div>
-
-                                {photos.length > 0 && (
-                                    <div className="photo-preview-grid">
-                                        {photos.map((photo, index) => (
-                                            <div key={index} className="photo-preview-item">
-                                                <img src={photo} className="photo-preview" alt={`Photo ${index + 1}`} />
-                                                <button
-                                                    type="button"
-                                                    className="photo-remove"
-                                                    onClick={() => removePhoto(index)}
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
 
                                 <button type="submit" className="btn">Ajouter</button>
                             </form>
