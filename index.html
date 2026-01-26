@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BudgetDuo 💑</title>
+    <title>BudgetDuo</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Karla:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -19,184 +18,117 @@
         }
 
         :root {
-            --bg-primary: #0a0e27;
-            --bg-secondary: #151936;
-            --bg-card: #1a1f3a;
-            --accent-pink: #ff6b9d;
-            --accent-blue: #4fc3f7;
-            --accent-gold: #ffd700;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #FAFAFA;
+            --bg-card: #F5F5F5;
+            --accent: #0066FF;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border: #E5E5E5;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         body {
-            font-family: 'Karla', sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1042 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(2px 2px at 20% 30%, white, transparent),
-                radial-gradient(2px 2px at 60% 70%, white, transparent),
-                radial-gradient(1px 1px at 50% 50%, white, transparent),
-                radial-gradient(1px 1px at 80% 10%, white, transparent),
-                radial-gradient(2px 2px at 90% 60%, white, transparent),
-                radial-gradient(1px 1px at 33% 80%, white, transparent);
-            background-size: 200% 200%;
-            background-position: 0% 0%;
-            animation: stars 60s ease-in-out infinite;
-            opacity: 0.3;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        @keyframes stars {
-            0%, 100% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
+            line-height: 1.5;
         }
 
         .app-container {
-            position: relative;
-            z-index: 1;
             max-width: 800px;
             margin: 0 auto;
-            padding: 15px;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            padding: 20px;
         }
 
         .header {
             text-align: center;
-            padding: 20px 15px;
-            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(79, 195, 247, 0.1) 100%);
-            border-radius: 15px;
+            padding: 12px 10px;
             margin-bottom: 20px;
-            border: 2px solid rgba(255, 107, 157, 0.2);
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '💑';
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            font-size: 80px;
-            opacity: 0.1;
-            transform: rotate(15deg);
+            border-bottom: 1px solid var(--border);
         }
 
         .header h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2rem;
-            background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 5px;
-            animation: glow 3s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.2); }
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            letter-spacing: -0.02em;
         }
 
         .tagline {
             color: var(--text-secondary);
-            font-size: 1.1rem;
-            font-style: italic;
+            font-size: 0.9rem;
+            font-weight: 400;
         }
 
         .setup-screen {
-            background: var(--bg-card);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-primary);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            max-width: 500px;
+            margin: 40px auto;
         }
 
         .setup-screen h2 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2rem;
-            margin-bottom: 30px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
             text-align: center;
-            color: var(--accent-pink);
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 12px;
         }
 
         .input-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.85rem;
         }
 
         .input-group input, .input-group select {
             width: 100%;
-            padding: 15px 20px;
-            background: var(--bg-secondary);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            padding: 9px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
             color: var(--text-primary);
-            font-size: 1rem;
-            font-family: 'Karla', sans-serif;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
         }
 
         .input-group input:focus, .input-group select:focus {
             outline: none;
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+            border-color: var(--accent);
         }
 
         .checkbox-group {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 9px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
         }
 
         .checkbox-group input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            accent-color: var(--accent-pink);
+            accent-color: var(--accent);
         }
 
         .checkbox-group label {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             color: var(--text-primary);
         }
@@ -204,12 +136,11 @@
         .share-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(79, 195, 247, 0.1);
-            border-radius: 10px;
-            border: 1px solid rgba(79, 195, 247, 0.3);
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 9px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
         }
 
         .share-input-group {
@@ -218,244 +149,238 @@
         }
 
         .share-input-group label {
-            font-size: 0.85rem;
-            color: var(--accent-blue);
-            margin-bottom: 8px;
-            text-transform: none;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
         }
 
         .share-input-group input {
-            padding: 12px;
-            font-size: 0.95rem;
+            padding: 7px 10px;
+            font-size: 0.85rem;
         }
 
         .btn {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue));
+            padding: 10px;
+            background: var(--accent);
             border: none;
-            border-radius: 12px;
+            border-radius: 6px;
             color: white;
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+            transition: opacity 0.2s;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5);
+            opacity: 0.9;
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
         .balance-card {
-            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
-            padding: 20px;
-            border-radius: 15px;
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 15px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .balance-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 107, 157, 0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            border: 1px solid var(--border);
         }
 
         .balance-label {
-            position: relative;
-            z-index: 1;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .balance-amount {
-            position: relative;
-            z-index: 1;
-            font-family: 'DM Serif Display', serif;
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-pink));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-            font-weight: normal;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 500;
         }
 
         .balance-text {
-            position: relative;
-            z-index: 1;
             font-size: 1rem;
-            color: var(--text-secondary);
-            font-style: italic;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-weight: 500;
         }
 
         .user-stats {
-            position: relative;
-            z-index: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 15px;
         }
 
         .user-stat {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 6px;
         }
 
         .user-stat-label {
             font-size: 0.75rem;
             color: var(--text-secondary);
             margin-bottom: 3px;
+            font-weight: 500;
         }
 
         .user-stat-amount {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-blue);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .month-nav {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 15px;
-            background: var(--bg-card);
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            border: 1px solid var(--border);
         }
 
         .month-nav button {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--bg-secondary);
             border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
+            padding: 5px 10px;
+            border-radius: 4px;
             color: var(--text-primary);
             cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            transition: background 0.2s;
         }
 
         .month-nav button:hover {
-            background: var(--accent-pink);
-            transform: scale(1.1);
+            background: var(--bg-card);
         }
 
         .current-month {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.1rem;
-            color: var(--accent-pink);
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 500;
         }
 
         .add-btn {
-            background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue));
+            background: var(--accent);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: 700;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
+            transition: opacity 0.2s;
+            margin-bottom: 12px;
             width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .add-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.6);
+            opacity: 0.9;
         }
 
         .transactions-list {
-            background: var(--bg-card);
+            background: var(--bg-primary);
             padding: 15px;
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
         .transactions-header {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             margin-bottom: 12px;
-            color: var(--accent-blue);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .sort-controls {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .sort-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .sort-select {
+            flex: 1;
+            padding: 5px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .sort-select:hover {
+            border-color: var(--accent);
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
         .transaction-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 3px solid var(--accent-pink);
-            transition: all 0.3s ease;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--accent);
+            transition: background 0.2s;
         }
 
         .transaction-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
+            background: var(--bg-card);
         }
 
         .transaction-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .transaction-type {
-            font-weight: 700;
-            font-size: 0.95rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .transaction-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .edit-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         .transaction-amount {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.2rem;
-            color: var(--accent-gold);
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
         .transaction-details {
@@ -469,222 +394,29 @@
         .transaction-detail {
             display: flex;
             align-items: center;
-            gap: 5px;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease-out;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255, 107, 157, 0.3);
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2rem;
-            margin-bottom: 25px;
-            color: var(--accent-pink);
-            text-align: center;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state-text {
-            font-size: 1.2rem;
-            font-style: italic;
-        }
-
-        .settings-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 8px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-top: 15px;
-        }
-
-        .settings-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .scan-btn {
-            background: linear-gradient(135deg, #10b981, #06b6d4);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
-            width: 100%;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .scan-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
-        }
-
-        .image-preview {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .scanning-status {
-            text-align: center;
-            padding: 20px;
-            color: var(--accent-blue);
-            font-style: italic;
-        }
-
-        .scan-result {
-            background: rgba(16, 185, 129, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .scan-result-title {
-            color: #10b981;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .scan-result-text {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-
-        .sort-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .sort-label {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .sort-select {
-            flex: 1;
-            padding: 8px 12px;
-            background: var(--bg-secondary);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .sort-select:hover {
-            border-color: var(--accent-blue);
-        }
-
-        .sort-select:focus {
-            outline: none;
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
+            gap: 3px;
         }
 
         .photo-gallery {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 5px;
+            margin-top: 6px;
             flex-wrap: wrap;
         }
 
         .photo-thumbnail {
-            width: 80px;
-            height: 80px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
         }
 
         .photo-thumbnail:hover {
             transform: scale(1.05);
-            border-color: var(--accent-pink);
-            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+            border-color: var(--accent);
         }
 
         .photo-modal {
@@ -698,7 +430,6 @@
             align-items: center;
             justify-content: center;
             z-index: 2000;
-            animation: fadeIn 0.3s ease-out;
         }
 
         .photo-modal-content {
@@ -710,8 +441,7 @@
         .photo-modal-image {
             max-width: 100%;
             max-height: 90vh;
-            border-radius: 10px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
         }
 
         .photo-modal-close {
@@ -721,104 +451,366 @@
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
-            font-size: 1.5rem;
-            padding: 8px 16px;
-            border-radius: 8px;
+            font-size: 1.1rem;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .photo-modal-close:hover {
-            background: rgba(255, 107, 157, 0.8);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .add-photo-btn {
-            background: rgba(79, 195, 247, 0.2);
-            border: 2px dashed var(--accent-blue);
-            padding: 10px 15px;
-            border-radius: 8px;
-            color: var(--accent-blue);
+            background: var(--bg-secondary);
+            border: 1px dashed var(--border);
+            padding: 7px 10px;
+            border-radius: 6px;
+            color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-            margin-top: 10px;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            margin-top: 8px;
             display: inline-block;
         }
 
         .add-photo-btn:hover {
-            background: rgba(79, 195, 247, 0.3);
-            border-color: var(--accent-pink);
-            color: var(--accent-pink);
+            background: var(--bg-card);
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         .photo-preview-container {
             display: flex;
-            gap: 10px;
+            gap: 6px;
             flex-wrap: wrap;
-            margin: 15px 0;
+            margin: 8px 0;
         }
 
         .photo-preview-item {
             position: relative;
-            width: 100px;
-            height: 100px;
+            width: 70px;
+            height: 70px;
         }
 
         .photo-preview-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            border: 1px solid var(--border);
         }
 
         .photo-preview-remove {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ef4444;
+            top: -5px;
+            right: -5px;
+            background: #EF4444;
             border: none;
             color: white;
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .photo-preview-remove:hover {
-            background: #dc2626;
+            background: #DC2626;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 35px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 0.95rem;
+        }
+
+        .settings-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 9px 18px;
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
+        .settings-btn:hover {
+            background: var(--bg-card);
         }
 
         .sync-status {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
+            background: var(--bg-primary);
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--border);
             z-index: 100;
         }
 
         .sync-status.connected {
-            color: #4ade80;
+            color: #10B981;
+        }
+
+        .scan-btn {
+            background: var(--accent);
+            border: none;
+            padding: 9px 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .scan-btn:hover {
+            opacity: 0.9;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 6px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+        }
+
+        .scanning-status {
+            text-align: center;
+            padding: 12px;
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        .scan-result {
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+        }
+
+        .scan-result-title {
+            color: #10B981;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .scan-result-text {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .category-manager {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .category-manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .category-manager-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .category-manager-toggle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .category-item-remove {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            padding: 0 3px;
+            font-size: 0.9rem;
+        }
+
+        .add-category-form {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .icon-picker-container {
+            position: relative;
+        }
+
+        .icon-picker {
+            padding: 5px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 40px;
+            text-align: center;
+        }
+
+        .icon-picker:hover {
+            border-color: var(--accent);
+        }
+
+        .icon-picker-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .icon-option {
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .icon-option:hover {
+            background: var(--bg-secondary);
+        }
+
+        .category-name-input {
+            flex: 1;
+            padding: 5px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .add-category-btn {
+            padding: 5px 10px;
+            background: var(--accent);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .add-category-btn:hover {
+            opacity: 0.9;
         }
 
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .balance-amount {
-                font-size: 2rem;
+                font-size: 1.4rem;
             }
 
             .user-stats {
@@ -826,7 +818,7 @@
             }
 
             .modal-content {
-                padding: 30px 20px;
+                padding: 18px 15px;
             }
 
             .modal-buttons {
@@ -838,7 +830,7 @@
             }
 
             .transaction-item {
-                padding: 10px;
+                padding: 8px;
             }
 
             .transaction-details {
@@ -854,8 +846,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // REMPLACE avec ta configuration Firebase
-       const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
   authDomain: "budgetduo-96f22.firebaseapp.com",
   databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
@@ -864,9 +855,28 @@
   messagingSenderId: "44840005819",
   appId: "1:44840005819:web:5344367cda9a500a4a799e"
 };
-
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+
+        const DEFAULT_CATEGORIES = {
+            epicerie: { icon: "🛒", name: "Épicerie" },
+            restaurant: { icon: "🍽️", name: "Restaurant" },
+            transport: { icon: "🚗", name: "Transport" },
+            loisirs: { icon: "🎮", name: "Loisirs" },
+            pharmacie: { icon: "💊", name: "Pharmacie" },
+            entretien: { icon: "🔧", name: "Entretien" },
+            electricite: { icon: "⚡", name: "Électricité" },
+            hypotheque: { icon: "🏠", name: "Hypothèque" },
+            autre: { icon: "📦", name: "Autre" }
+        };
+
+        const AVAILABLE_ICONS = [
+            "🛒", "🍽️", "🚗", "🎮", "💊", "🔧", "⚡", "🏠",
+            "📦", "✈️", "🎬", "🏋️", "💇", "🐕", "📚", "☕",
+            "🎵", "🛠️", "🏥", "🎁", "🍕", "🎨", "💻", "🏖️"
+        ];
+
+        const VISION_API_KEY = 'AIzaSyDIdcbS0yDHtAgToOMln30DBR75OOuloVM';
 
         function BudgetDuo() {
             const [isSetup, setIsSetup] = useState(false);
@@ -874,6 +884,7 @@
             const [partnerName, setPartnerName] = useState('');
             const [roomCode, setRoomCode] = useState('');
             const [transactions, setTransactions] = useState([]);
+            const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
             const [currentMonth, setCurrentMonth] = useState(new Date());
             const [showModal, setShowModal] = useState(false);
             const [showSettings, setShowSettings] = useState(false);
@@ -886,8 +897,10 @@
             const [sortBy, setSortBy] = useState('date-desc');
             const [transactionPhotos, setTransactionPhotos] = useState([]);
             const [viewingPhoto, setViewingPhoto] = useState(null);
-
-            const VISION_API_KEY = 'AIzaSyDIdcbS0yDHtAgToOMln30DBR75OOuloVM';
+            const [showCategoryManager, setShowCategoryManager] = useState(false);
+            const [newCategoryIcon, setNewCategoryIcon] = useState('📦');
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [showIconPicker, setShowIconPicker] = useState(false);
 
             const [formData, setFormData] = useState({
                 amount: '',
@@ -898,8 +911,7 @@
                 beneficiary: '',
                 userShare: '',
                 partnerShare: '',
-                date: new Date().toISOString().split('T')[0],
-                photos: []
+                date: new Date().toISOString().split('T')[0]
             });
 
             useEffect(() => {
@@ -919,6 +931,7 @@
                     setIsSetup(true);
                     setFormData(prev => ({ ...prev, payer: savedUserName, beneficiary: savedPartnerName }));
                     loadTransactions(savedRoomCode);
+                    loadCategories(savedRoomCode);
                 }
 
                 return () => {
@@ -953,6 +966,48 @@
                 });
             };
 
+            const loadCategories = (code) => {
+                const categoriesRef = database.ref(`rooms/${code}/categories`);
+                
+                categoriesRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        setCategories(data);
+                    } else {
+                        categoriesRef.set(DEFAULT_CATEGORIES);
+                        setCategories(DEFAULT_CATEGORIES);
+                    }
+                });
+            };
+
+            const addCategory = () => {
+                if (!newCategoryName.trim()) return;
+
+                const categoryId = newCategoryName.toLowerCase().replace(/\s+/g, '_');
+                const newCategory = {
+                    icon: newCategoryIcon,
+                    name: newCategoryName.trim()
+                };
+
+                const categoriesRef = database.ref(`rooms/${roomCode}/categories/${categoryId}`);
+                categoriesRef.set(newCategory);
+
+                setNewCategoryName('');
+                setNewCategoryIcon('📦');
+            };
+
+            const removeCategory = (categoryId) => {
+                if (Object.keys(DEFAULT_CATEGORIES).includes(categoryId)) {
+                    alert('Impossible de supprimer une catégorie par défaut');
+                    return;
+                }
+
+                if (confirm('Supprimer cette catégorie ?')) {
+                    const categoryRef = database.ref(`rooms/${roomCode}/categories/${categoryId}`);
+                    categoryRef.remove();
+                }
+            };
+
             const handleSetup = (e) => {
                 e.preventDefault();
                 if (userName && partnerName && roomCode) {
@@ -962,6 +1017,7 @@
                     setIsSetup(true);
                     setFormData(prev => ({ ...prev, payer: userName, beneficiary: partnerName }));
                     loadTransactions(roomCode);
+                    loadCategories(roomCode);
                 }
             };
 
@@ -1020,8 +1076,7 @@
                     beneficiary: formData.payer === userName ? partnerName : userName,
                     userShare: '',
                     partnerShare: '',
-                    date: new Date().toISOString().split('T')[0],
-                    photos: []
+                    date: new Date().toISOString().split('T')[0]
                 });
                 setTransactionPhotos([]);
                 setScannedImage(null);
@@ -1138,11 +1193,11 @@
                         const fullText = data.responses[0].textAnnotations[0].description;
                         parseReceipt(fullText);
                     } else {
-                        setScanResult({ error: 'Aucun texte détecté sur l\'image' });
+                        setScanResult({ error: 'Aucun texte détecté' });
                     }
                 } catch (error) {
                     console.error('Erreur scan:', error);
-                    setScanResult({ error: 'Erreur lors du scan de la facture' });
+                    setScanResult({ error: 'Erreur lors du scan' });
                 } finally {
                     setIsScanning(false);
                 }
@@ -1216,39 +1271,44 @@
                            transDate.getFullYear() === currentMonth.getFullYear();
                 });
 
-                let userTotal = 0;
-                let partnerTotal = 0;
+                let userPaid = 0;
+                let partnerPaid = 0;
+                let userOwed = 0;
+                let partnerOwed = 0;
 
                 monthTransactions.forEach(trans => {
                     if (trans.userShare !== undefined && trans.partnerShare !== undefined) {
                         if (trans.payer === userName) {
-                            partnerTotal += trans.partnerShare;
+                            userPaid += trans.amount;
+                            partnerOwed += trans.partnerShare;
                         } else {
-                            userTotal += trans.userShare;
+                            partnerPaid += trans.amount;
+                            userOwed += trans.userShare;
                         }
                     } else {
                         if (trans.type === 'shared') {
                             if (trans.payer === userName) {
-                                partnerTotal += trans.amount / 2;
+                                userPaid += trans.amount;
+                                partnerOwed += trans.amount / 2;
                             } else {
-                                userTotal += trans.amount / 2;
+                                partnerPaid += trans.amount;
+                                userOwed += trans.amount / 2;
                             }
                         } else if (trans.type === 'personal') {
                             if (trans.payer === userName) {
-                                partnerTotal += trans.amount;
+                                userPaid += trans.amount;
+                                partnerOwed += trans.amount;
                             } else {
-                                userTotal += trans.amount;
+                                partnerPaid += trans.amount;
+                                userOwed += trans.amount;
                             }
-                        } else if (trans.type === 'refund') {
-                            userTotal -= trans.amount / 2;
-                            partnerTotal -= trans.amount / 2;
                         }
                     }
                 });
 
-                const balance = partnerTotal - userTotal;
+                const balance = partnerOwed - userOwed;
 
-                return { userTotal, partnerTotal, balance, transactions: monthTransactions };
+                return { userPaid, partnerPaid, balance, transactions: monthTransactions };
             };
 
             const changeMonth = (delta) => {
@@ -1261,19 +1321,11 @@
                 return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
             };
 
-            const getCategoryLabel = (category) => {
-                const labels = {
-                    epicerie: '🛒 Épicerie',
-                    restaurant: '🍽️ Restaurant',
-                    transport: '🚗 Transport',
-                    loisirs: '🎮 Loisirs',
-                    pharmacie: '💊 Pharmacie',
-                    entretien: '🔧 Entretien',
-                    electricite: '⚡ Électricité',
-                    hypotheque: '🏠 Hypothèque',
-                    autre: '📦 Autre'
-                };
-                return labels[category] || category;
+            const getCategoryLabel = (categoryId) => {
+                if (categories[categoryId]) {
+                    return `${categories[categoryId].icon} ${categories[categoryId].name}`;
+                }
+                return categoryId;
             };
 
             const sortTransactions = (transactionsList) => {
@@ -1311,14 +1363,14 @@
                     <div className="app-container">
                         <div className="header">
                             <h1>BudgetDuo</h1>
-                            <p className="tagline">Gérez vos finances à deux, en toute simplicité</p>
+                            <p className="tagline">Gestion de budget de couple</p>
                         </div>
 
                         <div className="setup-screen">
-                            <h2>✨ Configuration initiale</h2>
+                            <h2>Configuration</h2>
                             <form onSubmit={handleSetup}>
                                 <div className="input-group">
-                                    <label>👤 Votre nom</label>
+                                    <label>Votre nom</label>
                                     <input
                                         type="text"
                                         value={userName}
@@ -1329,7 +1381,7 @@
                                 </div>
 
                                 <div className="input-group">
-                                    <label>💑 Nom de votre partenaire</label>
+                                    <label>Nom de votre partenaire</label>
                                     <input
                                         type="text"
                                         value={partnerName}
@@ -1340,7 +1392,7 @@
                                 </div>
 
                                 <div className="input-group">
-                                    <label>🔐 Code de salle</label>
+                                    <label>Code de salle</label>
                                     <input
                                         type="text"
                                         value={roomCode}
@@ -1348,13 +1400,13 @@
                                         placeholder="Ex: couple2024"
                                         required
                                     />
-                                    <small style={{ color: 'var(--text-secondary)', marginTop: '8px', display: 'block' }}>
-                                        💡 Utilisez le même code pour synchroniser vos données
+                                    <small style={{ color: 'var(--text-secondary)', marginTop: '5px', display: 'block', fontSize: '0.8rem' }}>
+                                        Utilisez le même code pour synchroniser
                                     </small>
                                 </div>
 
                                 <button type="submit" className="btn">
-                                    🚀 Commencer
+                                    Commencer
                                 </button>
                             </form>
                         </div>
@@ -1362,7 +1414,7 @@
                 );
             }
 
-            const { userTotal, partnerTotal, balance, transactions: monthTransactions } = calculateBalance();
+            const { userPaid, partnerPaid, balance, transactions: monthTransactions } = calculateBalance();
 
             return (
                 <div className="app-container">
@@ -1373,11 +1425,21 @@
 
                     <div className="balance-card">
                         <div className="balance-label">Bilan du mois</div>
-                        <div className="balance-amount">{Math.abs(balance).toFixed(2)} $</div>
                         <div className="balance-text">
-                            {Math.abs(balance) < 0.01 ? '✨ Tout est égal !' :
-                             balance > 0 ? `💰 ${partnerName} doit ${Math.abs(balance).toFixed(2)}$ à ${userName}` :
-                             `💸 ${userName} doit ${Math.abs(balance).toFixed(2)}$ à ${partnerName}`}
+                            {Math.abs(balance) < 0.01 ? 'Tout est égal' :
+                             balance > 0 ? `${partnerName} doit ${Math.abs(balance).toFixed(2)}$ à ${userName}` :
+                             `${userName} doit ${Math.abs(balance).toFixed(2)}$ à ${partnerName}`}
+                        </div>
+
+                        <div className="user-stats">
+                            <div className="user-stat">
+                                <div className="user-stat-label">{userName} (payé)</div>
+                                <div className="user-stat-amount">{userPaid.toFixed(2)} $</div>
+                            </div>
+                            <div className="user-stat">
+                                <div className="user-stat-label">{partnerName} (payé)</div>
+                                <div className="user-stat-amount">{partnerPaid.toFixed(2)} $</div>
+                            </div>
                         </div>
                     </div>
 
@@ -1388,29 +1450,29 @@
                     </div>
 
                     <button className="add-btn" onClick={() => setShowModal(true)}>
-                        ➕ Nouvelle transaction
+                        + Nouvelle transaction
                     </button>
 
                     <div className="transactions-list">
                         <div className="transactions-header">
-                            📋 Historique {monthTransactions.length > 0 && `(${monthTransactions.length})`}
+                            Historique {monthTransactions.length > 0 && `(${monthTransactions.length})`}
                         </div>
 
                         {monthTransactions.length > 0 && (
                             <div className="sort-controls">
-                                <span className="sort-label">🔽 Trier par :</span>
+                                <span className="sort-label">Trier :</span>
                                 <select 
                                     className="sort-select"
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
                                 >
-                                    <option value="date-desc">📅 Date (plus récent)</option>
-                                    <option value="date-asc">📅 Date (plus ancien)</option>
-                                    <option value="amount-desc">💰 Montant (plus élevé)</option>
-                                    <option value="amount-asc">💰 Montant (plus bas)</option>
-                                    <option value="vendor">🏪 Marchand (A-Z)</option>
-                                    <option value="category">📂 Catégorie (A-Z)</option>
-                                    <option value="payer">👤 Payé par (A-Z)</option>
+                                    <option value="date-desc">Date (récent)</option>
+                                    <option value="date-asc">Date (ancien)</option>
+                                    <option value="amount-desc">Montant (élevé)</option>
+                                    <option value="amount-asc">Montant (bas)</option>
+                                    <option value="vendor">Marchand</option>
+                                    <option value="category">Catégorie</option>
+                                    <option value="payer">Payé par</option>
                                 </select>
                             </div>
                         )}
@@ -1425,43 +1487,31 @@
                                 <div key={trans.id} className="transaction-item" onDoubleClick={() => deleteTransaction(trans.id)}>
                                     <div className="transaction-header">
                                         <div className="transaction-type">
-                                            {trans.isShared ? '🤝 Partagée' : 
-                                             trans.payer === userName && trans.beneficiary === partnerName ? `💸 Pour ${partnerName}` :
-                                             trans.payer === partnerName && trans.beneficiary === userName ? `💸 Pour ${userName}` :
-                                             '👤 Personnelle'}
+                                            {trans.isShared ? 'Partagée' : 
+                                             trans.payer === userName && trans.beneficiary === partnerName ? `Pour ${partnerName}` :
+                                             trans.payer === partnerName && trans.beneficiary === userName ? `Pour ${userName}` :
+                                             'Personnelle'}
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div className="transaction-actions">
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     editTransaction(trans);
                                                 }}
-                                                style={{
-                                                    background: 'rgba(255, 255, 255, 0.1)',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    padding: '6px 12px',
-                                                    color: 'var(--accent-blue)',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.9rem',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                onMouseOver={(e) => e.target.style.background = 'rgba(79, 195, 247, 0.2)'}
-                                                onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
+                                                className="edit-btn"
                                             >
-                                                ✏️ Modifier
+                                                Modifier
                                             </button>
                                             <div className="transaction-amount">{trans.amount.toFixed(2)} $</div>
                                         </div>
                                     </div>
                                     <div className="transaction-details">
                                         <div className="transaction-detail">
-                                            <span>👤 Payé par</span>
+                                            <span>Payé:</span>
                                             <span>{trans.payer}</span>
                                         </div>
                                         {trans.vendor && (
                                             <div className="transaction-detail">
-                                                <span>🏪</span>
                                                 <span>{trans.vendor}</span>
                                             </div>
                                         )}
@@ -1469,13 +1519,12 @@
                                             <span>{getCategoryLabel(trans.category)}</span>
                                         </div>
                                         <div className="transaction-detail">
-                                            <span>📅</span>
                                             <span>{new Date(trans.date).toLocaleDateString('fr-FR')}</span>
                                         </div>
                                     </div>
                                     {trans.isShared && (
-                                        <div style={{ marginTop: '10px', fontSize: '0.85rem', color: 'var(--accent-blue)' }}>
-                                            Part {userName}: {trans.userShare?.toFixed(2)}$ • Part {partnerName}: {trans.partnerShare?.toFixed(2)}$
+                                        <div style={{ marginTop: '6px', fontSize: '0.75rem', color: 'var(--accent)' }}>
+                                            {userName}: {trans.userShare?.toFixed(2)}$ • {partnerName}: {trans.partnerShare?.toFixed(2)}$
                                         </div>
                                     )}
                                     {trans.photos && trans.photos.length > 0 && (
@@ -1492,12 +1541,11 @@
                                         </div>
                                     )}
                                     <div style={{ 
-                                        marginTop: '10px', 
-                                        fontSize: '0.75rem', 
-                                        color: 'var(--text-secondary)', 
-                                        fontStyle: 'italic' 
+                                        marginTop: '6px', 
+                                        fontSize: '0.7rem', 
+                                        color: 'var(--text-secondary)'
                                     }}>
-                                        💡 Double-clic pour supprimer
+                                        Double-clic pour supprimer
                                     </div>
                                 </div>
                             ))
@@ -1505,17 +1553,17 @@
                     </div>
 
                     <button className="settings-btn" onClick={() => setShowSettings(true)}>
-                        ⚙️ Paramètres
+                        Paramètres
                     </button>
 
                     <div className={`sync-status ${isConnected ? 'connected' : ''}`}>
-                        {isConnected ? '🔥 Connecté' : '⚠️ Déconnecté'}
+                        {isConnected ? 'Connecté' : 'Déconnecté'}
                     </div>
 
                     {showModal && (
                         <div className="modal" onClick={() => setShowModal(false)}>
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                <h2 className="modal-header">➕ Nouvelle transaction</h2>
+                                <h2 className="modal-header">Nouvelle transaction</h2>
                                 
                                 <input
                                     type="file"
@@ -1526,33 +1574,33 @@
                                     id="camera-input"
                                 />
                                 <label htmlFor="camera-input" className="scan-btn">
-                                    📸 Scanner une facture
+                                    Scanner une facture
                                 </label>
 
                                 {isScanning && (
                                     <div className="scanning-status">
-                                        🔍 Analyse de la facture en cours...
+                                        Analyse en cours...
                                     </div>
                                 )}
 
                                 {scannedImage && (
-                                    <img src={scannedImage} alt="Facture scannée" className="image-preview" />
+                                    <img src={scannedImage} alt="Facture" className="image-preview" />
                                 )}
 
                                 {scanResult && !scanResult.error && (
                                     <div className="scan-result">
-                                        <div className="scan-result-title">✅ Détection réussie !</div>
+                                        <div className="scan-result-title">Détecté</div>
                                         <div className="scan-result-text">
-                                            {scanResult.amount && `💰 Montant: ${scanResult.amount.toFixed(2)}$`}
-                                            {scanResult.vendor && ` • 🏪 ${scanResult.vendor}`}
-                                            {scanResult.date && ` • 📅 ${new Date(scanResult.date).toLocaleDateString('fr-FR')}`}
+                                            {scanResult.amount && `${scanResult.amount.toFixed(2)}$`}
+                                            {scanResult.vendor && ` • ${scanResult.vendor}`}
+                                            {scanResult.date && ` • ${new Date(scanResult.date).toLocaleDateString('fr-FR')}`}
                                         </div>
                                     </div>
                                 )}
 
                                 {scanResult && scanResult.error && (
-                                    <div className="scan-result" style={{ borderColor: '#ef4444', background: 'rgba(239, 68, 68, 0.1)' }}>
-                                        <div className="scan-result-title" style={{ color: '#ef4444' }}>❌ Erreur</div>
+                                    <div className="scan-result" style={{ borderColor: '#ef4444' }}>
+                                        <div className="scan-result-title" style={{ color: '#ef4444' }}>Erreur</div>
                                         <div className="scan-result-text">{scanResult.error}</div>
                                     </div>
                                 )}
@@ -1585,14 +1633,14 @@
                                             id="add-photo-input"
                                         />
                                         <label htmlFor="add-photo-input" className="add-photo-btn">
-                                            📷 Ajouter une photo ({transactionPhotos.length}/3)
+                                            Ajouter photo ({transactionPhotos.length}/3)
                                         </label>
                                     </>
                                 )}
 
                                 <form onSubmit={addTransaction}>
                                     <div className="input-group">
-                                        <label>📅 Date</label>
+                                        <label>Date</label>
                                         <input
                                             type="date"
                                             value={formData.date}
@@ -1602,7 +1650,7 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>💰 Montant total</label>
+                                        <label>Montant</label>
                                         <input
                                             type="number"
                                             step="0.01"
@@ -1614,7 +1662,7 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>👤 Payé par</label>
+                                        <label>Payé par</label>
                                         <select
                                             value={formData.payer}
                                             onChange={(e) => setFormData({ ...formData, payer: e.target.value })}
@@ -1632,13 +1680,13 @@
                                             checked={formData.isShared}
                                             onChange={(e) => setFormData({ ...formData, isShared: e.target.checked })}
                                         />
-                                        <label htmlFor="isShared">🤝 Partager cette dépense</label>
+                                        <label htmlFor="isShared">Partager cette dépense</label>
                                     </div>
 
                                     {formData.isShared ? (
                                         <div className="share-inputs">
                                             <div className="share-input-group">
-                                                <label>Part de {userName}</label>
+                                                <label>Part {userName}</label>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -1656,7 +1704,7 @@
                                                 />
                                             </div>
                                             <div className="share-input-group">
-                                                <label>Part de {partnerName}</label>
+                                                <label>Part {partnerName}</label>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -1689,7 +1737,7 @@
                                     )}
 
                                     <div className="input-group">
-                                        <label>🏪 Marchand (optionnel)</label>
+                                        <label>Marchand</label>
                                         <input
                                             type="text"
                                             value={formData.vendor}
@@ -1699,21 +1747,89 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>📂 Catégorie</label>
+                                        <label>Catégorie</label>
                                         <select
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         >
-                                            <option value="epicerie">🛒 Épicerie</option>
-                                            <option value="restaurant">🍽️ Restaurant</option>
-                                            <option value="transport">🚗 Transport</option>
-                                            <option value="loisirs">🎮 Loisirs</option>
-                                            <option value="pharmacie">💊 Pharmacie</option>
-                                            <option value="entretien">🔧 Entretien</option>
-                                            <option value="electricite">⚡ Électricité</option>
-                                            <option value="hypotheque">🏠 Hypothèque</option>
-                                            <option value="autre">📦 Autre</option>
+                                            {Object.entries(categories).map(([id, cat]) => (
+                                                <option key={id} value={id}>{cat.icon} {cat.name}</option>
+                                            ))}
                                         </select>
+                                    </div>
+
+                                    <div className="category-manager">
+                                        <div 
+                                            className="category-manager-header"
+                                            onClick={() => setShowCategoryManager(!showCategoryManager)}
+                                        >
+                                            <div className="category-manager-title">Gérer les catégories</div>
+                                            <div className="category-manager-toggle">
+                                                {showCategoryManager ? '▼' : '▶'}
+                                            </div>
+                                        </div>
+
+                                        {showCategoryManager && (
+                                            <>
+                                                <div className="category-list">
+                                                    {Object.entries(categories).map(([id, cat]) => (
+                                                        <div key={id} className="category-item">
+                                                            <span>{cat.icon} {cat.name}</span>
+                                                            {!Object.keys(DEFAULT_CATEGORIES).includes(id) && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="category-item-remove"
+                                                                    onClick={() => removeCategory(id)}
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="add-category-form">
+                                                    <div className="icon-picker-container">
+                                                        <div 
+                                                            className="icon-picker"
+                                                            onClick={() => setShowIconPicker(!showIconPicker)}
+                                                        >
+                                                            {newCategoryIcon}
+                                                        </div>
+                                                        {showIconPicker && (
+                                                            <div className="icon-picker-dropdown">
+                                                                {AVAILABLE_ICONS.map((icon, idx) => (
+                                                                    <div
+                                                                        key={idx}
+                                                                        className="icon-option"
+                                                                        onClick={() => {
+                                                                            setNewCategoryIcon(icon);
+                                                                            setShowIconPicker(false);
+                                                                        }}
+                                                                    >
+                                                                        {icon}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        className="category-name-input"
+                                                        value={newCategoryName}
+                                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                                        placeholder="Nom..."
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="add-category-btn"
+                                                        onClick={addCategory}
+                                                    >
+                                                        + Ajouter
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
 
                                     <div className="modal-buttons">
@@ -1721,7 +1837,7 @@
                                             Annuler
                                         </button>
                                         <button type="submit" className="btn">
-                                            ➕ Ajouter
+                                            Ajouter
                                         </button>
                                     </div>
                                 </form>
@@ -1732,25 +1848,22 @@
                     {showSettings && (
                         <div className="modal" onClick={() => setShowSettings(false)}>
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                <h2 className="modal-header">⚙️ Paramètres</h2>
-                                <div style={{ marginBottom: '20px' }}>
-                                    <p style={{ color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                                        <strong>Vos noms :</strong> {userName} & {partnerName}
+                                <h2 className="modal-header">Paramètres</h2>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '0.9rem' }}>
+                                        <strong>Noms:</strong> {userName} & {partnerName}
                                     </p>
-                                    <p style={{ color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                                        <strong>Code de salle :</strong> {roomCode}
+                                    <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '0.9rem' }}>
+                                        <strong>Code:</strong> {roomCode}
                                     </p>
-                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontStyle: 'italic' }}>
-                                        💡 Partagez ce code pour synchroniser vos données
-                                    </p>
-                                    <p style={{ color: isConnected ? '#4ade80' : '#fbbf24', marginTop: '15px', fontWeight: 'bold' }}>
-                                        {isConnected ? '🔥 Connecté à Firebase' : '⚠️ Connexion Firebase perdue'}
+                                    <p style={{ color: isConnected ? '#10B981' : '#fbbf24', marginTop: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                        {isConnected ? 'Connecté' : 'Connexion perdue'}
                                     </p>
                                 </div>
-                                <button className="btn" style={{ background: '#e53e3e' }} onClick={resetApp}>
-                                    🔄 Réinitialiser l'application
+                                <button className="btn" style={{ background: '#EF4444' }} onClick={resetApp}>
+                                    Réinitialiser
                                 </button>
-                                <button className="btn btn-secondary" style={{ marginTop: '15px' }} onClick={() => setShowSettings(false)}>
+                                <button className="btn btn-secondary" style={{ marginTop: '10px' }} onClick={() => setShowSettings(false)}>
                                     Fermer
                                 </button>
                             </div>
@@ -1760,10 +1873,10 @@
                     {showEditModal && editingTransaction && (
                         <div className="modal" onClick={() => setShowEditModal(false)}>
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                <h2 className="modal-header">✏️ Modifier la transaction</h2>
+                                <h2 className="modal-header">Modifier</h2>
                                 <form onSubmit={updateTransaction}>
                                     <div className="input-group">
-                                        <label>📅 Date</label>
+                                        <label>Date</label>
                                         <input
                                             type="date"
                                             value={editingTransaction.date ? editingTransaction.date.split('T')[0] : ''}
@@ -1773,7 +1886,7 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>💰 Montant total</label>
+                                        <label>Montant</label>
                                         <input
                                             type="number"
                                             step="0.01"
@@ -1796,7 +1909,7 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>👤 Payé par</label>
+                                        <label>Payé par</label>
                                         <select
                                             value={editingTransaction.payer}
                                             onChange={(e) => setEditingTransaction({ ...editingTransaction, payer: e.target.value })}
@@ -1822,13 +1935,13 @@
                                                 });
                                             }}
                                         />
-                                        <label htmlFor="editIsShared">🤝 Partager cette dépense</label>
+                                        <label htmlFor="editIsShared">Partager</label>
                                     </div>
 
                                     {editingTransaction.isShared ? (
                                         <div className="share-inputs">
                                             <div className="share-input-group">
-                                                <label>Part de {userName}</label>
+                                                <label>Part {userName}</label>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -1845,7 +1958,7 @@
                                                 />
                                             </div>
                                             <div className="share-input-group">
-                                                <label>Part de {partnerName}</label>
+                                                <label>Part {partnerName}</label>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -1877,7 +1990,7 @@
                                     )}
 
                                     <div className="input-group">
-                                        <label>🏪 Marchand (optionnel)</label>
+                                        <label>Marchand</label>
                                         <input
                                             type="text"
                                             value={editingTransaction.vendor}
@@ -1886,20 +1999,14 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>📂 Catégorie</label>
+                                        <label>Catégorie</label>
                                         <select
                                             value={editingTransaction.category}
                                             onChange={(e) => setEditingTransaction({ ...editingTransaction, category: e.target.value })}
                                         >
-                                            <option value="epicerie">🛒 Épicerie</option>
-                                            <option value="restaurant">🍽️ Restaurant</option>
-                                            <option value="transport">🚗 Transport</option>
-                                            <option value="loisirs">🎮 Loisirs</option>
-                                            <option value="pharmacie">💊 Pharmacie</option>
-                                            <option value="entretien">🔧 Entretien</option>
-                                            <option value="electricite">⚡ Électricité</option>
-                                            <option value="hypotheque">🏠 Hypothèque</option>
-                                            <option value="autre">📦 Autre</option>
+                                            {Object.entries(categories).map(([id, cat]) => (
+                                                <option key={id} value={id}>{cat.icon} {cat.name}</option>
+                                            ))}
                                         </select>
                                     </div>
 
@@ -1911,7 +2018,7 @@
                                             Annuler
                                         </button>
                                         <button type="submit" className="btn">
-                                            💾 Enregistrer
+                                            Enregistrer
                                         </button>
                                     </div>
                                 </form>
@@ -1925,7 +2032,7 @@
                                 <button className="photo-modal-close" onClick={() => setViewingPhoto(null)}>
                                     ✕ Fermer
                                 </button>
-                                <img src={viewingPhoto} alt="Reçu en grand" className="photo-modal-image" />
+                                <img src={viewingPhoto} alt="Reçu" className="photo-modal-image" />
                             </div>
                         </div>
                     )}
