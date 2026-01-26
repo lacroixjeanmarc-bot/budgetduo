@@ -569,6 +569,63 @@
             transform: translateY(-2px);
         }
 
+        .scan-btn {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .scanning-status {
+            text-align: center;
+            padding: 20px;
+            color: var(--accent-blue);
+            font-style: italic;
+        }
+
+        .scan-result {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .scan-result-title {
+            color: #10b981;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .scan-result-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
         .sync-status {
             position: fixed;
             bottom: 20px;
@@ -630,7 +687,7 @@
         const { useState, useEffect } = React;
 
         // REMPLACE avec ta configuration Firebase
-       const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
   authDomain: "budgetduo-96f22.firebaseapp.com",
   databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
@@ -639,7 +696,6 @@
   messagingSenderId: "44840005819",
   appId: "1:44840005819:web:5344367cda9a500a4a799e"
 };
-
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -655,6 +711,11 @@
             const [showEditModal, setShowEditModal] = useState(false);
             const [isConnected, setIsConnected] = useState(false);
             const [editingTransaction, setEditingTransaction] = useState(null);
+            const [isScanning, setIsScanning] = useState(false);
+            const [scannedImage, setScannedImage] = useState(null);
+            const [scanResult, setScanResult] = useState(null);
+
+            const VISION_API_KEY = 'AIzaSyDIdcbS0yDHtAgToOMln30DBR75OOuloVM';
 
             const [formData, setFormData] = useState({
                 amount: '',
@@ -836,6 +897,129 @@
                     amount: amount,
                     userShare: userShare,
                     partnerShare: partnerShare,
+                    month: transactionDate.getMonth(),
+                    year: transactionDate.getFullYear()
+                };
+
+                const transactionRef = database.ref(`rooms/${roomCode}/transactions/${editingTransaction.id}`);
+                transactionRef.set(updatedTransaction);
+
+                setShowEditModal(false);
+                setEditingTransaction(null);
+            };
+
+            const handleImageCapture = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64Image = event.target.result.split(',')[1];
+                    setScannedImage(event.target.result);
+                    scanReceipt(base64Image);
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const scanReceipt = async (base64Image) => {
+                setIsScanning(true);
+                setScanResult(null);
+
+                try {
+                    const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${VISION_API_KEY}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            requests: [{
+                                image: { content: base64Image },
+                                features: [{ type: 'TEXT_DETECTION' }]
+                            }]
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.responses && data.responses[0].textAnnotations) {
+                        const fullText = data.responses[0].textAnnotations[0].description;
+                        parseReceipt(fullText);
+                    } else {
+                        setScanResult({ error: 'Aucun texte détecté sur l\'image' });
+                    }
+                } catch (error) {
+                    console.error('Erreur scan:', error);
+                    setScanResult({ error: 'Erreur lors du scan de la facture' });
+                } finally {
+                    setIsScanning(false);
+                }
+            };
+
+            const parseReceipt = (text) => {
+                const lines = text.split('\n');
+                let amount = null;
+                let vendor = null;
+                let date = null;
+
+                // Chercher le montant (format: 123.45, 123,45, $123.45, etc.)
+                const amountRegex = /(\$?\s*\d+[.,]\d{2})/g;
+                const amounts = [];
+                
+                lines.forEach(line => {
+                    const matches = line.match(amountRegex);
+                    if (matches) {
+                        matches.forEach(match => {
+                            const cleanAmount = parseFloat(match.replace(/[$,\s]/g, '').replace(',', '.'));
+                            if (cleanAmount > 0 && cleanAmount < 10000) {
+                                amounts.push(cleanAmount);
+                            }
+                        });
+                    }
+                });
+
+                // Prendre le plus grand montant (souvent le total)
+                if (amounts.length > 0) {
+                    amount = Math.max(...amounts);
+                }
+
+                // Chercher le nom du marchand (souvent la première ligne non vide)
+                for (let line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.length > 2 && trimmed.length < 50 && !trimmed.match(/^\d+$/)) {
+                        vendor = trimmed;
+                        break;
+                    }
+                }
+
+                // Chercher une date (format: YYYY-MM-DD, DD/MM/YYYY, etc.)
+                const dateRegex = /(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{4}|\d{1,2}[-/]\d{1,2}[-/]\d{2})/;
+                for (let line of lines) {
+                    const match = line.match(dateRegex);
+                    if (match) {
+                        try {
+                            const parsedDate = new Date(match[1]);
+                            if (!isNaN(parsedDate.getTime())) {
+                                date = parsedDate.toISOString().split('T')[0];
+                            }
+                        } catch (e) {
+                            // Ignore invalid dates
+                        }
+                        break;
+                    }
+                }
+
+                setScanResult({ amount, vendor, date, fullText: text });
+
+                // Pré-remplir le formulaire avec les valeurs détectées
+                if (amount || vendor || date) {
+                    setFormData(prev => ({
+                        ...prev,
+                        amount: amount ? amount.toFixed(2) : prev.amount,
+                        vendor: vendor || prev.vendor,
+                        date: date || prev.date
+                    }));
+                }
+            };
                     month: transactionDate.getMonth(),
                     year: transactionDate.getFullYear()
                 };
@@ -1110,6 +1294,47 @@
                         <div className="modal" onClick={() => setShowModal(false)}>
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                                 <h2 className="modal-header">➕ Nouvelle transaction</h2>
+                                
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleImageCapture}
+                                    style={{ display: 'none' }}
+                                    id="camera-input"
+                                />
+                                <label htmlFor="camera-input" className="scan-btn">
+                                    📸 Scanner une facture
+                                </label>
+
+                                {isScanning && (
+                                    <div className="scanning-status">
+                                        🔍 Analyse de la facture en cours...
+                                    </div>
+                                )}
+
+                                {scannedImage && (
+                                    <img src={scannedImage} alt="Facture scannée" className="image-preview" />
+                                )}
+
+                                {scanResult && !scanResult.error && (
+                                    <div className="scan-result">
+                                        <div className="scan-result-title">✅ Détection réussie !</div>
+                                        <div className="scan-result-text">
+                                            {scanResult.amount && `💰 Montant: ${scanResult.amount.toFixed(2)}$`}
+                                            {scanResult.vendor && ` • 🏪 ${scanResult.vendor}`}
+                                            {scanResult.date && ` • 📅 ${new Date(scanResult.date).toLocaleDateString('fr-FR')}`}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {scanResult && scanResult.error && (
+                                    <div className="scan-result" style={{ borderColor: '#ef4444', background: 'rgba(239, 68, 68, 0.1)' }}>
+                                        <div className="scan-result-title" style={{ color: '#ef4444' }}>❌ Erreur</div>
+                                        <div className="scan-result-text">{scanResult.error}</div>
+                                    </div>
+                                )}
+
                                 <form onSubmit={addTransaction}>
                                     <div className="input-group">
                                         <label>📅 Date</label>
