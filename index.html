@@ -341,6 +341,82 @@
         .transaction-item:hover {
             background: var(--bg-card);
         }
+        .transaction-item.expense {
+            border-left-color: #0066FF;
+        }
+
+        .transaction-item.income {
+            border-left-color: #10B981;
+        }
+
+        .transaction-item.transfer {
+            border-left-color: #F59E0B;
+        }
+
+        .transaction-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .transaction-type-badge.expense {
+            background: rgba(0, 102, 255, 0.1);
+            color: #0066FF;
+        }
+
+        .transaction-type-badge.income {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+
+        .transaction-type-badge.transfer {
+            background: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+        }
+
+        .transaction-type-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .transaction-type-option {
+            flex: 1;
+            padding: 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .transaction-type-option:hover {
+            border-color: var(--accent);
+        }
+
+        .transaction-type-option.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .transaction-type-option.active.income {
+            background: #10B981;
+            border-color: #10B981;
+        }
+
+        .transaction-type-option.active.transfer {
+            background: #F59E0B;
+            border-color: #F59E0B;
+        }
+
 
         .transaction-header {
             display: flex;
@@ -846,7 +922,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
   authDomain: "budgetduo-96f22.firebaseapp.com",
   databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
@@ -855,6 +931,7 @@ const firebaseConfig = {
   messagingSenderId: "44840005819",
   appId: "1:44840005819:web:5344367cda9a500a4a799e"
 };
+
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -903,6 +980,7 @@ const firebaseConfig = {
             const [showIconPicker, setShowIconPicker] = useState(false);
 
             const [formData, setFormData] = useState({
+                transactionType: 'expense',
                 amount: '',
                 vendor: '',
                 category: 'epicerie',
@@ -911,7 +989,10 @@ const firebaseConfig = {
                 beneficiary: '',
                 userShare: '',
                 partnerShare: '',
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                transferFrom: '',
+                transferTo: '',
+                note: ''
             });
 
             useEffect(() => {
