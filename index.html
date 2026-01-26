@@ -876,10 +876,7 @@
                         body: JSON.stringify({
                             requests: [{
                                 image: { content: base64Image },
-                                features: [
-                                    { type: 'TEXT_DETECTION' },
-                                    { type: 'DOCUMENT_TEXT_DETECTION' }
-                                ]
+                                features: [{ type: 'TEXT_DETECTION' }]
                             }]
                         })
                     });
@@ -887,32 +884,41 @@
                     const data = await response.json();
                     
                     if (data.responses && data.responses[0].textAnnotations) {
-                        const text = data.responses[0].textAnnotations[0].description;
-                        console.log('Texte détecté:', text);
+                        const fullText = data.responses[0].textAnnotations[0].description;
+                        console.log('Texte détecté:', fullText);
                         
-                        // Extract amount (chercher des patterns comme 24.99, 24,99, $24.99, etc.)
-                        const amountPatterns = [
-                            /(?:total|montant|amount|subtotal)[\s:]*\$?\s*(\d+[.,]\d{2})/i,
-                            /\$\s*(\d+[.,]\d{2})/,
-                            /(\d+[.,]\d{2})\s*\$/,
-                            /(?:^|\s)(\d+[.,]\d{2})(?:\s|$)/
-                        ];
+                        const lines = fullText.split('\n');
+                        
+                        // Extract ALL amounts and take the highest one (usually the total)
+                        const amountRegex = /(\$?\s*\d+[.,]\d{2})/g;
+                        const amounts = [];
+                        
+                        lines.forEach(line => {
+                            const matches = line.match(amountRegex);
+                            if (matches) {
+                                matches.forEach(match => {
+                                    const cleanAmount = parseFloat(match.replace(/[$,\s]/g, '').replace(',', '.'));
+                                    if (cleanAmount > 0 && cleanAmount < 10000) {
+                                        amounts.push(cleanAmount);
+                                    }
+                                });
+                            }
+                        });
                         
                         let extractedAmount = '';
-                        for (const pattern of amountPatterns) {
-                            const match = text.match(pattern);
-                            if (match) {
-                                extractedAmount = match[1].replace(',', '.');
-                                break;
-                            }
+                        if (amounts.length > 0) {
+                            // Take the highest amount as the total
+                            extractedAmount = Math.max(...amounts).toFixed(2);
                         }
                         
-                        // Extract vendor/merchant name (usually at the top)
-                        const lines = text.split('\n').filter(line => line.trim());
+                        // Extract vendor/merchant name (first meaningful line)
                         let extractedVendor = '';
-                        if (lines.length > 0) {
-                            // Take first non-empty line as vendor
-                            extractedVendor = lines[0].trim().substring(0, 50);
+                        for (let line of lines) {
+                            const trimmed = line.trim();
+                            if (trimmed.length > 2 && trimmed.length < 50 && !trimmed.match(/^\d+$/)) {
+                                extractedVendor = trimmed;
+                                break;
+                            }
                         }
                         
                         // Auto-fill the form
@@ -942,7 +948,15 @@
                             setCategory('transport');
                         }
                         
-                        console.log('Données extraites:', { amount: extractedAmount, vendor: extractedVendor });
+                        console.log('Données extraites:', { 
+                            amount: extractedAmount, 
+                            vendor: extractedVendor,
+                            allAmounts: amounts 
+                        });
+                        
+                        if (!extractedAmount && !extractedVendor) {
+                            setScanError('Aucune donnée détectée sur le reçu');
+                        }
                     } else {
                         setScanError('Aucun texte détecté sur le reçu');
                     }
