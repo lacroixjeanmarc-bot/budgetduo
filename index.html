@@ -159,7 +159,7 @@
             letter-spacing: 1px;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 15px 20px;
             background: var(--bg-secondary);
@@ -171,10 +171,62 @@
             transition: all 0.3s ease;
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: var(--accent-pink);
             box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--accent-pink);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .share-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(79, 195, 247, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+
+        .share-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .share-input-group label {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+            text-transform: none;
+        }
+
+        .share-input-group input {
+            padding: 12px;
+            font-size: 0.95rem;
         }
 
         .btn {
@@ -482,25 +534,6 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        select {
-            width: 100%;
-            padding: 15px 20px;
-            background: var(--bg-secondary);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-family: 'Karla', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
-        }
-
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -574,6 +607,10 @@
             .modal-buttons {
                 flex-direction: column;
             }
+            
+            .share-inputs {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -611,11 +648,15 @@
             const [editingTransaction, setEditingTransaction] = useState(null);
 
             const [formData, setFormData] = useState({
-                type: 'shared',
                 amount: '',
                 vendor: '',
                 category: 'epicerie',
-                payer: ''
+                payer: '',
+                isShared: true,
+                beneficiary: '',
+                userShare: '',
+                partnerShare: '',
+                date: new Date().toISOString().split('T')[0]
             });
 
             useEffect(() => {
@@ -633,7 +674,7 @@
                     setPartnerName(savedPartnerName);
                     setRoomCode(savedRoomCode);
                     setIsSetup(true);
-                    setFormData(prev => ({ ...prev, payer: savedUserName }));
+                    setFormData(prev => ({ ...prev, payer: savedUserName, beneficiary: savedPartnerName }));
                     loadTransactions(savedRoomCode);
                 }
 
@@ -641,6 +682,19 @@
                     connectedRef.off();
                 };
             }, []);
+
+            useEffect(() => {
+                if (formData.isShared && formData.amount) {
+                    const amount = parseFloat(formData.amount);
+                    if (!isNaN(amount)) {
+                        setFormData(prev => ({
+                            ...prev,
+                            userShare: (amount / 2).toFixed(2),
+                            partnerShare: (amount / 2).toFixed(2)
+                        }));
+                    }
+                }
+            }, [formData.amount, formData.isShared]);
 
             const loadTransactions = (code) => {
                 const transactionsRef = database.ref(`rooms/${code}/transactions`);
@@ -663,7 +717,7 @@
                     localStorage.setItem('partnerName', partnerName);
                     localStorage.setItem('roomCode', roomCode);
                     setIsSetup(true);
-                    setFormData(prev => ({ ...prev, payer: userName }));
+                    setFormData(prev => ({ ...prev, payer: userName, beneficiary: partnerName }));
                     loadTransactions(roomCode);
                 }
             };
@@ -671,27 +725,58 @@
             const addTransaction = (e) => {
                 e.preventDefault();
                 
+                const amount = parseFloat(formData.amount);
+                let userShare, partnerShare;
+                
+                if (formData.isShared) {
+                    userShare = parseFloat(formData.userShare) || amount / 2;
+                    partnerShare = parseFloat(formData.partnerShare) || amount / 2;
+                } else {
+                    if (formData.payer === userName && formData.beneficiary === partnerName) {
+                        userShare = 0;
+                        partnerShare = amount;
+                    } else if (formData.payer === partnerName && formData.beneficiary === userName) {
+                        userShare = amount;
+                        partnerShare = 0;
+                    } else if (formData.payer === userName && formData.beneficiary === userName) {
+                        userShare = amount;
+                        partnerShare = 0;
+                    } else {
+                        userShare = 0;
+                        partnerShare = amount;
+                    }
+                }
+
+                const transactionDate = new Date(formData.date);
+                
                 const newTransaction = {
                     id: Date.now(),
-                    type: formData.type,
-                    amount: parseFloat(formData.amount),
+                    amount: amount,
                     vendor: formData.vendor,
                     category: formData.category,
                     payer: formData.payer,
-                    date: new Date().toISOString(),
-                    month: currentMonth.getMonth(),
-                    year: currentMonth.getFullYear()
+                    beneficiary: formData.isShared ? 'both' : formData.beneficiary,
+                    isShared: formData.isShared,
+                    userShare: userShare,
+                    partnerShare: partnerShare,
+                    date: transactionDate.toISOString(),
+                    month: transactionDate.getMonth(),
+                    year: transactionDate.getFullYear()
                 };
 
                 const transactionsRef = database.ref(`rooms/${roomCode}/transactions/${newTransaction.id}`);
                 transactionsRef.set(newTransaction);
 
                 setFormData({
-                    type: 'shared',
                     amount: '',
                     vendor: '',
                     category: 'epicerie',
-                    payer: formData.payer
+                    payer: formData.payer,
+                    isShared: true,
+                    beneficiary: formData.payer === userName ? partnerName : userName,
+                    userShare: '',
+                    partnerShare: '',
+                    date: new Date().toISOString().split('T')[0]
                 });
                 setShowModal(false);
             };
@@ -713,14 +798,37 @@
                 
                 if (!editingTransaction) return;
 
+                const amount = parseFloat(editingTransaction.amount);
+                let userShare, partnerShare;
+
+                if (editingTransaction.isShared) {
+                    userShare = parseFloat(editingTransaction.userShare) || amount / 2;
+                    partnerShare = parseFloat(editingTransaction.partnerShare) || amount / 2;
+                } else {
+                    if (editingTransaction.payer === userName && editingTransaction.beneficiary === partnerName) {
+                        userShare = 0;
+                        partnerShare = amount;
+                    } else if (editingTransaction.payer === partnerName && editingTransaction.beneficiary === userName) {
+                        userShare = amount;
+                        partnerShare = 0;
+                    } else if (editingTransaction.payer === userName && editingTransaction.beneficiary === userName) {
+                        userShare = amount;
+                        partnerShare = 0;
+                    } else {
+                        userShare = 0;
+                        partnerShare = amount;
+                    }
+                }
+
+                const transactionDate = new Date(editingTransaction.date);
+
                 const updatedTransaction = {
                     ...editingTransaction,
-                    type: editingTransaction.type,
-                    amount: parseFloat(editingTransaction.amount),
-                    vendor: editingTransaction.vendor,
-                    category: editingTransaction.category,
-                    payer: editingTransaction.payer,
-                    date: editingTransaction.date,
+                    amount: amount,
+                    userShare: userShare,
+                    partnerShare: partnerShare,
+                    month: transactionDate.getMonth(),
+                    year: transactionDate.getFullYear()
                 };
 
                 const transactionRef = database.ref(`rooms/${roomCode}/transactions/${editingTransaction.id}`);
@@ -741,21 +849,29 @@
                 let partnerTotal = 0;
 
                 monthTransactions.forEach(trans => {
-                    if (trans.type === 'shared') {
+                    if (trans.userShare !== undefined && trans.partnerShare !== undefined) {
                         if (trans.payer === userName) {
-                            partnerTotal += trans.amount / 2;
+                            partnerTotal += trans.partnerShare;
                         } else {
-                            userTotal += trans.amount / 2;
+                            userTotal += trans.userShare;
                         }
-                    } else if (trans.type === 'personal') {
-                        if (trans.payer === userName) {
-                            partnerTotal += trans.amount;
-                        } else {
-                            userTotal += trans.amount;
+                    } else {
+                        if (trans.type === 'shared') {
+                            if (trans.payer === userName) {
+                                partnerTotal += trans.amount / 2;
+                            } else {
+                                userTotal += trans.amount / 2;
+                            }
+                        } else if (trans.type === 'personal') {
+                            if (trans.payer === userName) {
+                                partnerTotal += trans.amount;
+                            } else {
+                                userTotal += trans.amount;
+                            }
+                        } else if (trans.type === 'refund') {
+                            userTotal -= trans.amount / 2;
+                            partnerTotal -= trans.amount / 2;
                         }
-                    } else if (trans.type === 'refund') {
-                        userTotal -= trans.amount / 2;
-                        partnerTotal -= trans.amount / 2;
                     }
                 });
 
@@ -772,16 +888,6 @@
 
             const formatMonth = (date) => {
                 return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-            };
-
-            const getTypeLabel = (type) => {
-                const labels = {
-                    shared: '🤝 Partagée',
-                    personal: '👤 Personnelle',
-                    refund: '💰 Remboursement',
-                    transfer: '💸 Transfert'
-                };
-                return labels[type] || type;
             };
 
             const getCategoryLabel = (category) => {
@@ -876,8 +982,8 @@
                         <div className="balance-amount">{Math.abs(balance).toFixed(2)} $</div>
                         <div className="balance-text">
                             {Math.abs(balance) < 0.01 ? '✨ Tout est égal !' :
-                             balance > 0 ? `💰 ${partnerName} te doit` :
-                             `💸 Tu dois à ${partnerName}`}
+                             balance > 0 ? `💰 ${partnerName} doit ${Math.abs(balance).toFixed(2)}$ à ${userName}` :
+                             `💸 ${userName} doit ${Math.abs(balance).toFixed(2)}$ à ${partnerName}`}
                         </div>
 
                         <div className="user-stats">
@@ -916,7 +1022,12 @@
                             monthTransactions.map(trans => (
                                 <div key={trans.id} className="transaction-item" onDoubleClick={() => deleteTransaction(trans.id)}>
                                     <div className="transaction-header">
-                                        <div className="transaction-type">{getTypeLabel(trans.type)}</div>
+                                        <div className="transaction-type">
+                                            {trans.isShared ? '🤝 Partagée' : 
+                                             trans.payer === userName && trans.beneficiary === partnerName ? `💸 Pour ${partnerName}` :
+                                             trans.payer === partnerName && trans.beneficiary === userName ? `💸 Pour ${userName}` :
+                                             '👤 Personnelle'}
+                                        </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                             <button 
                                                 onClick={(e) => {
@@ -943,7 +1054,7 @@
                                     </div>
                                     <div className="transaction-details">
                                         <div className="transaction-detail">
-                                            <span>👤</span>
+                                            <span>👤 Payé par</span>
                                             <span>{trans.payer}</span>
                                         </div>
                                         {trans.vendor && (
@@ -960,6 +1071,11 @@
                                             <span>{new Date(trans.date).toLocaleDateString('fr-FR')}</span>
                                         </div>
                                     </div>
+                                    {trans.isShared && (
+                                        <div style={{ marginTop: '10px', fontSize: '0.85rem', color: 'var(--accent-blue)' }}>
+                                            Part {userName}: {trans.userShare?.toFixed(2)}$ • Part {partnerName}: {trans.partnerShare?.toFixed(2)}$
+                                        </div>
+                                    )}
                                     <div style={{ 
                                         marginTop: '10px', 
                                         fontSize: '0.75rem', 
@@ -987,32 +1103,104 @@
                                 <h2 className="modal-header">➕ Nouvelle transaction</h2>
                                 <form onSubmit={addTransaction}>
                                     <div className="input-group">
-                                        <label>Type de transaction</label>
-                                        <select
-                                            value={formData.type}
-                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                        >
-                                            <option value="shared">🤝 Partagée (50/50)</option>
-                                            <option value="personal">👤 Personnelle (100%)</option>
-                                            <option value="refund">💰 Remboursement</option>
-                                            <option value="transfer">💸 Transfert</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label>Montant</label>
+                                        <label>📅 Date</label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            value={formData.amount}
-                                            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                                            placeholder="25.50"
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                             required
                                         />
                                     </div>
 
                                     <div className="input-group">
-                                        <label>Marchand</label>
+                                        <label>💰 Montant total</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={formData.amount}
+                                            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                                            placeholder="100.00"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>👤 Payé par</label>
+                                        <select
+                                            value={formData.payer}
+                                            onChange={(e) => setFormData({ ...formData, payer: e.target.value })}
+                                            required
+                                        >
+                                            <option value={userName}>{userName}</option>
+                                            <option value={partnerName}>{partnerName}</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="checkbox-group">
+                                        <input
+                                            type="checkbox"
+                                            id="isShared"
+                                            checked={formData.isShared}
+                                            onChange={(e) => setFormData({ ...formData, isShared: e.target.checked })}
+                                        />
+                                        <label htmlFor="isShared">🤝 Partager cette dépense</label>
+                                    </div>
+
+                                    {formData.isShared ? (
+                                        <div className="share-inputs">
+                                            <div className="share-input-group">
+                                                <label>Part de {userName}</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={formData.userShare}
+                                                    onChange={(e) => {
+                                                        const userVal = parseFloat(e.target.value) || 0;
+                                                        const total = parseFloat(formData.amount) || 0;
+                                                        setFormData({ 
+                                                            ...formData, 
+                                                            userShare: e.target.value,
+                                                            partnerShare: (total - userVal).toFixed(2)
+                                                        });
+                                                    }}
+                                                    placeholder="50.00"
+                                                />
+                                            </div>
+                                            <div className="share-input-group">
+                                                <label>Part de {partnerName}</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={formData.partnerShare}
+                                                    onChange={(e) => {
+                                                        const partnerVal = parseFloat(e.target.value) || 0;
+                                                        const total = parseFloat(formData.amount) || 0;
+                                                        setFormData({ 
+                                                            ...formData, 
+                                                            partnerShare: e.target.value,
+                                                            userShare: (total - partnerVal).toFixed(2)
+                                                        });
+                                                    }}
+                                                    placeholder="50.00"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="input-group">
+                                            <label>Pour qui ?</label>
+                                            <select
+                                                value={formData.beneficiary}
+                                                onChange={(e) => setFormData({ ...formData, beneficiary: e.target.value })}
+                                                required
+                                            >
+                                                <option value={userName}>{userName}</option>
+                                                <option value={partnerName}>{partnerName}</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="input-group">
+                                        <label>🏪 Marchand (optionnel)</label>
                                         <input
                                             type="text"
                                             value={formData.vendor}
@@ -1022,7 +1210,7 @@
                                     </div>
 
                                     <div className="input-group">
-                                        <label>Catégorie</label>
+                                        <label>📂 Catégorie</label>
                                         <select
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -1039,23 +1227,12 @@
                                         </select>
                                     </div>
 
-                                    <div className="input-group">
-                                        <label>Qui a payé ?</label>
-                                        <select
-                                            value={formData.payer}
-                                            onChange={(e) => setFormData({ ...formData, payer: e.target.value })}
-                                        >
-                                            <option value={userName}>{userName}</option>
-                                            <option value={partnerName}>{partnerName}</option>
-                                        </select>
-                                    </div>
-
                                     <div className="modal-buttons">
                                         <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
                                             Annuler
                                         </button>
                                         <button type="submit" className="btn">
-                                            Ajouter
+                                            ➕ Ajouter
                                         </button>
                                     </div>
                                 </form>
@@ -1097,42 +1274,130 @@
                                 <h2 className="modal-header">✏️ Modifier la transaction</h2>
                                 <form onSubmit={updateTransaction}>
                                     <div className="input-group">
-                                        <label>Type de transaction</label>
-                                        <select
-                                            value={editingTransaction.type}
-                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, type: e.target.value })}
-                                        >
-                                            <option value="shared">🤝 Partagée (50/50)</option>
-                                            <option value="personal">👤 Personnelle (100%)</option>
-                                            <option value="refund">💰 Remboursement</option>
-                                            <option value="transfer">💸 Transfert</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label>Montant</label>
+                                        <label>📅 Date</label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            value={editingTransaction.amount}
-                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, amount: e.target.value })}
-                                            placeholder="25.50"
+                                            type="date"
+                                            value={editingTransaction.date ? editingTransaction.date.split('T')[0] : ''}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, date: new Date(e.target.value).toISOString() })}
                                             required
                                         />
                                     </div>
 
                                     <div className="input-group">
-                                        <label>Marchand</label>
+                                        <label>💰 Montant total</label>
                                         <input
-                                            type="text"
-                                            value={editingTransaction.vendor}
-                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, vendor: e.target.value })}
-                                            placeholder="IGA, Tim Hortons..."
+                                            type="number"
+                                            step="0.01"
+                                            value={editingTransaction.amount}
+                                            onChange={(e) => {
+                                                const newAmount = parseFloat(e.target.value);
+                                                if (editingTransaction.isShared) {
+                                                    setEditingTransaction({
+                                                        ...editingTransaction,
+                                                        amount: e.target.value,
+                                                        userShare: (newAmount / 2).toFixed(2),
+                                                        partnerShare: (newAmount / 2).toFixed(2)
+                                                    });
+                                                } else {
+                                                    setEditingTransaction({ ...editingTransaction, amount: e.target.value });
+                                                }
+                                            }}
+                                            required
                                         />
                                     </div>
 
                                     <div className="input-group">
-                                        <label>Catégorie</label>
+                                        <label>👤 Payé par</label>
+                                        <select
+                                            value={editingTransaction.payer}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, payer: e.target.value })}
+                                            required
+                                        >
+                                            <option value={userName}>{userName}</option>
+                                            <option value={partnerName}>{partnerName}</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="checkbox-group">
+                                        <input
+                                            type="checkbox"
+                                            id="editIsShared"
+                                            checked={editingTransaction.isShared}
+                                            onChange={(e) => {
+                                                const amount = parseFloat(editingTransaction.amount);
+                                                setEditingTransaction({ 
+                                                    ...editingTransaction, 
+                                                    isShared: e.target.checked,
+                                                    userShare: e.target.checked ? (amount / 2).toFixed(2) : editingTransaction.userShare,
+                                                    partnerShare: e.target.checked ? (amount / 2).toFixed(2) : editingTransaction.partnerShare
+                                                });
+                                            }}
+                                        />
+                                        <label htmlFor="editIsShared">🤝 Partager cette dépense</label>
+                                    </div>
+
+                                    {editingTransaction.isShared ? (
+                                        <div className="share-inputs">
+                                            <div className="share-input-group">
+                                                <label>Part de {userName}</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={editingTransaction.userShare}
+                                                    onChange={(e) => {
+                                                        const userVal = parseFloat(e.target.value) || 0;
+                                                        const total = parseFloat(editingTransaction.amount) || 0;
+                                                        setEditingTransaction({ 
+                                                            ...editingTransaction, 
+                                                            userShare: e.target.value,
+                                                            partnerShare: (total - userVal).toFixed(2)
+                                                        });
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="share-input-group">
+                                                <label>Part de {partnerName}</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={editingTransaction.partnerShare}
+                                                    onChange={(e) => {
+                                                        const partnerVal = parseFloat(e.target.value) || 0;
+                                                        const total = parseFloat(editingTransaction.amount) || 0;
+                                                        setEditingTransaction({ 
+                                                            ...editingTransaction, 
+                                                            partnerShare: e.target.value,
+                                                            userShare: (total - partnerVal).toFixed(2)
+                                                        });
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="input-group">
+                                            <label>Pour qui ?</label>
+                                            <select
+                                                value={editingTransaction.beneficiary}
+                                                onChange={(e) => setEditingTransaction({ ...editingTransaction, beneficiary: e.target.value })}
+                                                required
+                                            >
+                                                <option value={userName}>{userName}</option>
+                                                <option value={partnerName}>{partnerName}</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="input-group">
+                                        <label>🏪 Marchand (optionnel)</label>
+                                        <input
+                                            type="text"
+                                            value={editingTransaction.vendor}
+                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, vendor: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>📂 Catégorie</label>
                                         <select
                                             value={editingTransaction.category}
                                             onChange={(e) => setEditingTransaction({ ...editingTransaction, category: e.target.value })}
@@ -1147,36 +1412,6 @@
                                             <option value="hypotheque">🏠 Hypothèque</option>
                                             <option value="autre">📦 Autre</option>
                                         </select>
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label>Qui a payé ?</label>
-                                        <select
-                                            value={editingTransaction.payer}
-                                            onChange={(e) => setEditingTransaction({ ...editingTransaction, payer: e.target.value })}
-                                        >
-                                            <option value={userName}>{userName}</option>
-                                            <option value={partnerName}>{partnerName}</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label>Date</label>
-                                        <input
-                                            type="date"
-                                            value={editingTransaction.date ? editingTransaction.date.split('T')[0] : ''}
-                                            onChange={(e) => {
-                                                const newDate = new Date(e.target.value);
-                                                newDate.setHours(12, 0, 0, 0);
-                                                setEditingTransaction({ 
-                                                    ...editingTransaction, 
-                                                    date: newDate.toISOString(),
-                                                    month: newDate.getMonth(),
-                                                    year: newDate.getFullYear()
-                                                });
-                                            }}
-                                            required
-                                        />
                                     </div>
 
                                     <div className="modal-buttons">
