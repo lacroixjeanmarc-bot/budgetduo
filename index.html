@@ -922,7 +922,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-       const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyBP4VP0zfXMDGhWmparJAnue-2mIpgDWfE",
   authDomain: "budgetduo-96f22.firebaseapp.com",
   databaseURL: "https://budgetduo-96f22-default-rtdb.firebaseio.com",
@@ -1106,49 +1106,69 @@
                 e.preventDefault();
                 
                 const amount = parseFloat(formData.amount);
-                let userShare, partnerShare;
-                
-                if (formData.isShared) {
-                    userShare = parseFloat(formData.userShare) || amount / 2;
-                    partnerShare = parseFloat(formData.partnerShare) || amount / 2;
+
+                if (formData.transactionType === 'transfer') {
+                    const newTransaction = {
+                        id: Date.now(),
+                        transactionType: 'transfer',
+                        amount: amount,
+                        transferFrom: formData.transferFrom,
+                        transferTo: formData.transferTo,
+                        note: formData.note,
+                        date: new Date(formData.date).toISOString(),
+                        month: new Date(formData.date).getMonth(),
+                        year: new Date(formData.date).getFullYear()
+                    };
+
+                    const transactionsRef = database.ref(`rooms/${roomCode}/transactions/${newTransaction.id}`);
+                    transactionsRef.set(newTransaction);
                 } else {
-                    if (formData.payer === userName && formData.beneficiary === partnerName) {
-                        userShare = 0;
-                        partnerShare = amount;
-                    } else if (formData.payer === partnerName && formData.beneficiary === userName) {
-                        userShare = amount;
-                        partnerShare = 0;
-                    } else if (formData.payer === userName && formData.beneficiary === userName) {
-                        userShare = amount;
-                        partnerShare = 0;
+                    let userShare, partnerShare;
+                    
+                    if (formData.isShared) {
+                        userShare = parseFloat(formData.userShare) || amount / 2;
+                        partnerShare = parseFloat(formData.partnerShare) || amount / 2;
                     } else {
-                        userShare = 0;
-                        partnerShare = amount;
+                        if (formData.payer === userName && formData.beneficiary === partnerName) {
+                            userShare = 0;
+                            partnerShare = amount;
+                        } else if (formData.payer === partnerName && formData.beneficiary === userName) {
+                            userShare = amount;
+                            partnerShare = 0;
+                        } else if (formData.payer === userName && formData.beneficiary === userName) {
+                            userShare = amount;
+                            partnerShare = 0;
+                        } else {
+                            userShare = 0;
+                            partnerShare = amount;
+                        }
                     }
+
+                    const transactionDate = new Date(formData.date);
+                    
+                    const newTransaction = {
+                        id: Date.now(),
+                        transactionType: formData.transactionType,
+                        amount: amount,
+                        vendor: formData.vendor,
+                        category: formData.category,
+                        payer: formData.payer,
+                        beneficiary: formData.isShared ? 'both' : formData.beneficiary,
+                        isShared: formData.isShared,
+                        userShare: userShare,
+                        partnerShare: partnerShare,
+                        date: transactionDate.toISOString(),
+                        month: transactionDate.getMonth(),
+                        year: transactionDate.getFullYear(),
+                        photos: transactionPhotos
+                    };
+
+                    const transactionsRef = database.ref(`rooms/${roomCode}/transactions/${newTransaction.id}`);
+                    transactionsRef.set(newTransaction);
                 }
 
-                const transactionDate = new Date(formData.date);
-                
-                const newTransaction = {
-                    id: Date.now(),
-                    amount: amount,
-                    vendor: formData.vendor,
-                    category: formData.category,
-                    payer: formData.payer,
-                    beneficiary: formData.isShared ? 'both' : formData.beneficiary,
-                    isShared: formData.isShared,
-                    userShare: userShare,
-                    partnerShare: partnerShare,
-                    date: transactionDate.toISOString(),
-                    month: transactionDate.getMonth(),
-                    year: transactionDate.getFullYear(),
-                    photos: transactionPhotos
-                };
-
-                const transactionsRef = database.ref(`rooms/${roomCode}/transactions/${newTransaction.id}`);
-                transactionsRef.set(newTransaction);
-
                 setFormData({
+                    transactionType: 'expense',
                     amount: '',
                     vendor: '',
                     category: 'epicerie',
@@ -1157,7 +1177,10 @@
                     beneficiary: formData.payer === userName ? partnerName : userName,
                     userShare: '',
                     partnerShare: '',
-                    date: new Date().toISOString().split('T')[0]
+                    date: new Date().toISOString().split('T')[0],
+                    transferFrom: '',
+                    transferTo: '',
+                    note: ''
                 });
                 setTransactionPhotos([]);
                 setScannedImage(null);
@@ -1358,30 +1381,48 @@
                 let partnerOwed = 0;
 
                 monthTransactions.forEach(trans => {
-                    if (trans.userShare !== undefined && trans.partnerShare !== undefined) {
-                        if (trans.payer === userName) {
+                    const transType = trans.transactionType || 'expense';
+
+                    if (transType === 'transfer') {
+                        if (trans.transferFrom === userName) {
                             userPaid += trans.amount;
-                            partnerOwed += trans.partnerShare;
-                        } else {
+                        } else if (trans.transferFrom === partnerName) {
                             partnerPaid += trans.amount;
-                            userOwed += trans.userShare;
+                        }
+                    } else if (transType === 'income') {
+                        if (trans.userShare !== undefined && trans.partnerShare !== undefined) {
+                            if (trans.payer === userName) {
+                                userOwed += trans.userShare;
+                            } else {
+                                partnerOwed += trans.partnerShare;
+                            }
                         }
                     } else {
-                        if (trans.type === 'shared') {
+                        if (trans.userShare !== undefined && trans.partnerShare !== undefined) {
                             if (trans.payer === userName) {
                                 userPaid += trans.amount;
-                                partnerOwed += trans.amount / 2;
+                                partnerOwed += trans.partnerShare;
                             } else {
                                 partnerPaid += trans.amount;
-                                userOwed += trans.amount / 2;
+                                userOwed += trans.userShare;
                             }
-                        } else if (trans.type === 'personal') {
-                            if (trans.payer === userName) {
-                                userPaid += trans.amount;
-                                partnerOwed += trans.amount;
-                            } else {
-                                partnerPaid += trans.amount;
-                                userOwed += trans.amount;
+                        } else {
+                            if (trans.type === 'shared') {
+                                if (trans.payer === userName) {
+                                    userPaid += trans.amount;
+                                    partnerOwed += trans.amount / 2;
+                                } else {
+                                    partnerPaid += trans.amount;
+                                    userOwed += trans.amount / 2;
+                                }
+                            } else if (trans.type === 'personal') {
+                                if (trans.payer === userName) {
+                                    userPaid += trans.amount;
+                                    partnerOwed += trans.amount;
+                                } else {
+                                    partnerPaid += trans.amount;
+                                    userOwed += trans.amount;
+                                }
                             }
                         }
                     }
@@ -1564,14 +1605,24 @@
                                 <div className="empty-state-text">Aucune transaction ce mois-ci</div>
                             </div>
                         ) : (
-                            sortTransactions(monthTransactions).map(trans => (
-                                <div key={trans.id} className="transaction-item" onDoubleClick={() => deleteTransaction(trans.id)}>
+                            sortTransactions(monthTransactions).map(trans => {
+                                const transType = trans.transactionType || 'expense';
+                                return (
+                                <div key={trans.id} className={`transaction-item ${transType}`} onDoubleClick={() => deleteTransaction(trans.id)}>
                                     <div className="transaction-header">
                                         <div className="transaction-type">
-                                            {trans.isShared ? 'Partagée' : 
-                                             trans.payer === userName && trans.beneficiary === partnerName ? `Pour ${partnerName}` :
-                                             trans.payer === partnerName && trans.beneficiary === userName ? `Pour ${userName}` :
-                                             'Personnelle'}
+                                            {transType === 'transfer' ? (
+                                                <span className="transaction-type-badge transfer">💸 Transfert</span>
+                                            ) : transType === 'income' ? (
+                                                <span className="transaction-type-badge income">💚 Revenu</span>
+                                            ) : (
+                                                <span className="transaction-type-badge expense">
+                                                    {trans.isShared ? 'Partagée' : 
+                                                     trans.payer === userName && trans.beneficiary === partnerName ? `Pour ${partnerName}` :
+                                                     trans.payer === partnerName && trans.beneficiary === userName ? `Pour ${userName}` :
+                                                     'Personnelle'}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="transaction-actions">
                                             <button 
@@ -1587,24 +1638,42 @@
                                         </div>
                                     </div>
                                     <div className="transaction-details">
-                                        <div className="transaction-detail">
-                                            <span>Payé:</span>
-                                            <span>{trans.payer}</span>
-                                        </div>
-                                        {trans.vendor && (
-                                            <div className="transaction-detail">
-                                                <span>{trans.vendor}</span>
-                                            </div>
+                                        {transType === 'transfer' ? (
+                                            <>
+                                                <div className="transaction-detail">
+                                                    <span>{trans.transferFrom} → {trans.transferTo}</span>
+                                                </div>
+                                                {trans.note && (
+                                                    <div className="transaction-detail">
+                                                        <span>{trans.note}</span>
+                                                    </div>
+                                                )}
+                                                <div className="transaction-detail">
+                                                    <span>{new Date(trans.date).toLocaleDateString('fr-FR')}</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="transaction-detail">
+                                                    <span>{transType === 'income' ? 'Reçu:' : 'Payé:'}</span>
+                                                    <span>{trans.payer}</span>
+                                                </div>
+                                                {trans.vendor && (
+                                                    <div className="transaction-detail">
+                                                        <span>{trans.vendor}</span>
+                                                    </div>
+                                                )}
+                                                <div className="transaction-detail">
+                                                    <span>{getCategoryLabel(trans.category)}</span>
+                                                </div>
+                                                <div className="transaction-detail">
+                                                    <span>{new Date(trans.date).toLocaleDateString('fr-FR')}</span>
+                                                </div>
+                                            </>
                                         )}
-                                        <div className="transaction-detail">
-                                            <span>{getCategoryLabel(trans.category)}</span>
-                                        </div>
-                                        <div className="transaction-detail">
-                                            <span>{new Date(trans.date).toLocaleDateString('fr-FR')}</span>
-                                        </div>
                                     </div>
-                                    {trans.isShared && (
-                                        <div style={{ marginTop: '6px', fontSize: '0.75rem', color: 'var(--accent)' }}>
+                                    {trans.isShared && transType !== 'transfer' && (
+                                        <div style={{ marginTop: '6px', fontSize: '0.75rem', color: transType === 'income' ? '#10B981' : 'var(--accent)' }}>
                                             {userName}: {trans.userShare?.toFixed(2)}$ • {partnerName}: {trans.partnerShare?.toFixed(2)}$
                                         </div>
                                     )}
@@ -1629,7 +1698,8 @@
                                         Double-clic pour supprimer
                                     </div>
                                 </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
 
@@ -1646,17 +1716,40 @@
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                                 <h2 className="modal-header">Nouvelle transaction</h2>
                                 
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    capture="environment"
-                                    onChange={handleImageCapture}
-                                    style={{ display: 'none' }}
-                                    id="camera-input"
-                                />
-                                <label htmlFor="camera-input" className="scan-btn">
-                                    Scanner une facture
-                                </label>
+                                <div className="transaction-type-selector">
+                                    <div 
+                                        className={`transaction-type-option ${formData.transactionType === 'expense' ? 'active' : ''}`}
+                                        onClick={() => setFormData({ ...formData, transactionType: 'expense' })}
+                                    >
+                                        💳 Dépense
+                                    </div>
+                                    <div 
+                                        className={`transaction-type-option income ${formData.transactionType === 'income' ? 'active' : ''}`}
+                                        onClick={() => setFormData({ ...formData, transactionType: 'income' })}
+                                    >
+                                        💚 Revenu
+                                    </div>
+                                    <div 
+                                        className={`transaction-type-option transfer ${formData.transactionType === 'transfer' ? 'active' : ''}`}
+                                        onClick={() => setFormData({ ...formData, transactionType: 'transfer' })}
+                                    >
+                                        💸 Transfert
+                                    </div>
+                                </div>
+
+                                {formData.transactionType !== 'transfer' && (
+                                    <>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            onChange={handleImageCapture}
+                                            style={{ display: 'none' }}
+                                            id="camera-input"
+                                        />
+                                        <label htmlFor="camera-input" className="scan-btn">
+                                            Scanner une facture
+                                        </label>
 
                                 {isScanning && (
                                     <div className="scanning-status">
@@ -1742,27 +1835,70 @@
                                         />
                                     </div>
 
-                                    <div className="input-group">
-                                        <label>Payé par</label>
-                                        <select
-                                            value={formData.payer}
-                                            onChange={(e) => setFormData({ ...formData, payer: e.target.value })}
-                                            required
-                                        >
-                                            <option value={userName}>{userName}</option>
-                                            <option value={partnerName}>{partnerName}</option>
-                                        </select>
-                                    </div>
+                                    {formData.transactionType === 'transfer' ? (
+                                        <>
+                                            <div className="input-group">
+                                                <label>De</label>
+                                                <select
+                                                    value={formData.transferFrom}
+                                                    onChange={(e) => setFormData({ 
+                                                        ...formData, 
+                                                        transferFrom: e.target.value,
+                                                        transferTo: e.target.value === userName ? partnerName : userName
+                                                    })}
+                                                    required
+                                                >
+                                                    <option value="">Sélectionner...</option>
+                                                    <option value={userName}>{userName}</option>
+                                                    <option value={partnerName}>{partnerName}</option>
+                                                </select>
+                                            </div>
 
-                                    <div className="checkbox-group">
-                                        <input
-                                            type="checkbox"
-                                            id="isShared"
-                                            checked={formData.isShared}
-                                            onChange={(e) => setFormData({ ...formData, isShared: e.target.checked })}
-                                        />
-                                        <label htmlFor="isShared">Partager cette dépense</label>
-                                    </div>
+                                            <div className="input-group">
+                                                <label>Vers</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.transferFrom === userName ? partnerName : userName}
+                                                    readOnly
+                                                    style={{ background: 'var(--bg-secondary)', cursor: 'not-allowed' }}
+                                                />
+                                            </div>
+
+                                            <div className="input-group">
+                                                <label>Note</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.note}
+                                                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                                                    placeholder="Paiement janvier, Remboursement..."
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="input-group">
+                                                <label>{formData.transactionType === 'income' ? 'Reçu par' : 'Payé par'}</label>
+                                                <select
+                                                    value={formData.payer}
+                                                    onChange={(e) => setFormData({ ...formData, payer: e.target.value })}
+                                                    required
+                                                >
+                                                    <option value={userName}>{userName}</option>
+                                                    <option value={partnerName}>{partnerName}</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="checkbox-group">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isShared"
+                                                    checked={formData.isShared}
+                                                    onChange={(e) => setFormData({ ...formData, isShared: e.target.checked })}
+                                                />
+                                                <label htmlFor="isShared">
+                                                    {formData.transactionType === 'income' ? 'Partager ce revenu' : 'Partager cette dépense'}
+                                                </label>
+                                            </div>
 
                                     {formData.isShared ? (
                                         <div className="share-inputs">
@@ -1815,10 +1951,13 @@
                                                 <option value={partnerName}>{partnerName}</option>
                                             </select>
                                         </div>
+                                        </>
                                     )}
 
-                                    <div className="input-group">
-                                        <label>Marchand</label>
+                                    {formData.transactionType !== 'transfer' && (
+                                        <>
+                                            <div className="input-group">
+                                                <label>{formData.transactionType === 'income' ? 'Source' : 'Marchand'}</label>
                                         <input
                                             type="text"
                                             value={formData.vendor}
@@ -1912,6 +2051,8 @@
                                             </>
                                         )}
                                     </div>
+                                        </>
+                                    )}
 
                                     <div className="modal-buttons">
                                         <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
@@ -2068,10 +2209,13 @@
                                                 <option value={partnerName}>{partnerName}</option>
                                             </select>
                                         </div>
+                                        </>
                                     )}
 
-                                    <div className="input-group">
-                                        <label>Marchand</label>
+                                    {formData.transactionType !== 'transfer' && (
+                                        <>
+                                            <div className="input-group">
+                                                <label>{formData.transactionType === 'income' ? 'Source' : 'Marchand'}</label>
                                         <input
                                             type="text"
                                             value={editingTransaction.vendor}
