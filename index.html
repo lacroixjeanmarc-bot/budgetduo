@@ -956,22 +956,34 @@
 
         .settings-tabs {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             margin-bottom: 16px;
             border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .settings-tabs::-webkit-scrollbar {
+            height: 2px;
+        }
+
+        .settings-tabs::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
         }
 
         .settings-tab {
-            padding: 8px 16px;
+            padding: 8px 12px;
             background: transparent;
             border: none;
             color: var(--text-secondary);
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             border-bottom: 2px solid transparent;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
+            white-space: nowrap;
         }
 
         .settings-tab:hover {
@@ -2192,18 +2204,6 @@
                                     </button>
                                 </div>
 
-                                <div className="input-group">
-                                    <label>Montant ({currencySymbol})</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        placeholder="0.00"
-                                        required
-                                    />
-                                </div>
-
                                 {transactionType !== 'transfer' && (
                                     <>
                                         <div className="input-group">
@@ -2244,21 +2244,60 @@
                                 )}
 
                                 <div className="input-group">
-                                    <label>Date</label>
-                                    <input
-                                        type="date"
-                                        value={date}
-                                        onChange={(e) => setDate(e.target.value)}
-                                        required
-                                    />
+                                    <label>Montant ({currencySymbol})</label>
+                                    <div style={{display: 'flex', gap: '8px', alignItems: 'flex-end'}}>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={amount}
+                                            onChange={(e) => setAmount(e.target.value)}
+                                            placeholder="0.00"
+                                            required
+                                            style={{flex: 1}}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            style={{
+                                                width: '48px',
+                                                height: '42px',
+                                                background: 'var(--bg-card)',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '1.3rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                                        >
+                                            📷
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="input-group">
-                                    <label>{transactionType === 'transfer' ? 'Payé par' : 'Payeur'}</label>
-                                    <select value={payer} onChange={(e) => setPayer(e.target.value)}>
-                                        <option value={userName}>{userName}</option>
-                                        <option value={partnerName}>{partnerName}</option>
-                                    </select>
+                                {/* Payé par + Date côte à côte */}
+                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px'}}>
+                                    <div className="input-group">
+                                        <label>{transactionType === 'transfer' ? 'Payé par' : 'Payeur'}</label>
+                                        <select value={payer} onChange={(e) => setPayer(e.target.value)}>
+                                            <option value={userName}>{userName}</option>
+                                            <option value={partnerName}>{partnerName}</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>Date</label>
+                                        <input
+                                            type="date"
+                                            value={date}
+                                            onChange={(e) => setDate(e.target.value)}
+                                            required
+                                        />
+                                    </div>
                                 </div>
 
                                 {transactionType === 'transfer' && (
