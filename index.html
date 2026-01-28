@@ -1237,6 +1237,9 @@
             const [payer, setPayer] = useState('');
             const [beneficiary, setBeneficiary] = useState('');
             const [isShared, setIsShared] = useState(true);
+            const [customAmounts, setCustomAmounts] = useState(false);
+            const [userCustomAmount, setUserCustomAmount] = useState('');
+            const [partnerCustomAmount, setPartnerCustomAmount] = useState('');
 
             // États UI
             const [showSettings, setShowSettings] = useState(false);
@@ -1253,6 +1256,7 @@
             const [selectedImages, setSelectedImages] = useState([]);
             const [uploadProgress, setUploadProgress] = useState(null);
             const fileInputRef = useRef(null);
+            const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
             // États tri
             const [sortBy, setSortBy] = useState('date');
@@ -1565,6 +1569,9 @@
                 setCategory('groceries');
                 setIsShared(true);
                 setSelectedImages([]);
+                setCustomAmounts(false);
+                setUserCustomAmount('');
+                setPartnerCustomAmount('');
             }
 
             // Ajouter ou modifier une transaction
@@ -1589,6 +1596,18 @@
                     if (isShared) {
                         userShare = parsedAmount / 2;
                         partnerShare = parsedAmount / 2;
+                    } else if (customAmounts) {
+                        // Montants personnalisés
+                        const userAmount = parseFloat(userCustomAmount);
+                        const partnerAmount = parseFloat(partnerCustomAmount);
+                        
+                        if (isNaN(userAmount) || isNaN(partnerAmount)) {
+                            alert('Montants personnalisés invalides');
+                            return;
+                        }
+                        
+                        userShare = userAmount;
+                        partnerShare = partnerAmount;
                     } else {
                         if (beneficiary === userName) {
                             userShare = parsedAmount;
@@ -1600,6 +1619,18 @@
                     if (isShared) {
                         userShare = parsedAmount / 2;
                         partnerShare = parsedAmount / 2;
+                    } else if (customAmounts) {
+                        // Montants personnalisés
+                        const userAmount = parseFloat(userCustomAmount);
+                        const partnerAmount = parseFloat(partnerCustomAmount);
+                        
+                        if (isNaN(userAmount) || isNaN(partnerAmount)) {
+                            alert('Montants personnalisés invalides');
+                            return;
+                        }
+                        
+                        userShare = userAmount;
+                        partnerShare = partnerAmount;
                     } else {
                         if (beneficiary === userName) {
                             userShare = parsedAmount;
@@ -1667,6 +1698,9 @@
                 setCategory('groceries');
                 setIsShared(true);
                 setSelectedImages([]);
+                setCustomAmounts(false);
+                setUserCustomAmount('');
+                setPartnerCustomAmount('');
             }
 
             function deleteTransaction(id) {
@@ -2255,28 +2289,161 @@
                                             required
                                             style={{flex: 1}}
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            style={{
-                                                width: '48px',
-                                                height: '42px',
-                                                background: 'var(--bg-card)',
-                                                border: '1px solid var(--border)',
-                                                borderRadius: '6px',
-                                                cursor: 'pointer',
-                                                fontSize: '1.3rem',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                transition: 'all 0.2s'
-                                            }}
-                                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
-                                            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
-                                        >
-                                            📷
-                                        </button>
+                                        <div style={{position: 'relative'}}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPhotoMenu(!showPhotoMenu)}
+                                                disabled={selectedImages.length >= 3}
+                                                style={{
+                                                    width: '48px',
+                                                    height: '42px',
+                                                    background: 'var(--bg-card)',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '6px',
+                                                    cursor: selectedImages.length >= 3 ? 'not-allowed' : 'pointer',
+                                                    fontSize: '1.3rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'all 0.2s',
+                                                    opacity: selectedImages.length >= 3 ? 0.5 : 1
+                                                }}
+                                                onMouseEnter={(e) => selectedImages.length < 3 && (e.currentTarget.style.borderColor = 'var(--accent)')}
+                                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                                            >
+                                                📷
+                                            </button>
+                                            
+                                            {showPhotoMenu && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    right: 0,
+                                                    marginTop: '4px',
+                                                    background: 'var(--bg-card)',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '8px',
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                                    zIndex: 1000,
+                                                    minWidth: '180px'
+                                                }}>
+                                                    <input
+                                                        ref={fileInputRef}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={(e) => {
+                                                            handleImageSelect(e);
+                                                            setShowPhotoMenu(false);
+                                                        }}
+                                                        style={{display: 'none'}}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            fileInputRef.current.removeAttribute('capture');
+                                                            fileInputRef.current.click();
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            padding: '12px 16px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            borderBottom: '1px solid var(--border)',
+                                                            textAlign: 'left',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.9rem',
+                                                            color: 'var(--text-primary)'
+                                                        }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                    >
+                                                        📁 Fichier local
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            fileInputRef.current.setAttribute('capture', 'environment');
+                                                            fileInputRef.current.click();
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            padding: '12px 16px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            textAlign: 'left',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.9rem',
+                                                            color: 'var(--text-primary)'
+                                                        }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                    >
+                                                        📸 Prendre une photo
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
+                                    
+                                    {/* Afficher les photos sous le champ montant */}
+                                    {selectedImages.length > 0 && (
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                                            gap: '8px',
+                                            marginTop: '12px'
+                                        }}>
+                                            {selectedImages.map((img, index) => (
+                                                <div key={index} style={{position: 'relative'}}>
+                                                    <img 
+                                                        src={img.preview} 
+                                                        alt={`Reçu ${index + 1}`}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '80px',
+                                                            objectFit: 'cover',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid var(--border)'
+                                                        }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeImage(index)}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: '4px',
+                                                            right: '4px',
+                                                            background: 'rgba(239, 68, 68, 0.9)',
+                                                            border: 'none',
+                                                            borderRadius: '50%',
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            color: 'white',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.7rem',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    
+                                    {selectedImages.length === 3 && (
+                                        <div style={{
+                                            marginTop: '8px',
+                                            fontSize: '0.75rem',
+                                            color: 'var(--text-secondary)',
+                                            textAlign: 'center'
+                                        }}>
+                                            Maximum de 3 photos atteint
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Payé par + Date côte à côte */}
@@ -2318,7 +2485,10 @@
                                                 type="checkbox"
                                                 id="shared"
                                                 checked={isShared}
-                                                onChange={(e) => setIsShared(e.target.checked)}
+                                                onChange={(e) => {
+                                                    setIsShared(e.target.checked);
+                                                    setCustomAmounts(false);
+                                                }}
                                             />
                                             <label htmlFor="shared">
                                                 {transactionType === 'expense' ? 'Dépense partagée 50/50' : 'Revenu partagé 50/50'}
@@ -2326,96 +2496,57 @@
                                         </div>
 
                                         {!isShared && (
-                                            <div className="input-group">
-                                                <label>Bénéficiaire</label>
-                                                <select value={beneficiary} onChange={(e) => setBeneficiary(e.target.value)}>
-                                                    <option value={userName}>{userName}</option>
-                                                    <option value={partnerName}>{partnerName}</option>
-                                                </select>
-                                            </div>
+                                            <>
+                                                <div className="checkbox-group">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="customAmounts"
+                                                        checked={customAmounts}
+                                                        onChange={(e) => setCustomAmounts(e.target.checked)}
+                                                    />
+                                                    <label htmlFor="customAmounts">
+                                                        Montants personnalisés
+                                                    </label>
+                                                </div>
+
+                                                {customAmounts ? (
+                                                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px'}}>
+                                                        <div className="input-group">
+                                                            <label>{userName} ({currencySymbol})</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={userCustomAmount}
+                                                                onChange={(e) => setUserCustomAmount(e.target.value)}
+                                                                placeholder="0.00"
+                                                                required
+                                                            />
+                                                        </div>
+                                                        <div className="input-group">
+                                                            <label>{partnerName} ({currencySymbol})</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={partnerCustomAmount}
+                                                                onChange={(e) => setPartnerCustomAmount(e.target.value)}
+                                                                placeholder="0.00"
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="input-group">
+                                                        <label>Bénéficiaire</label>
+                                                        <select value={beneficiary} onChange={(e) => setBeneficiary(e.target.value)}>
+                                                            <option value={userName}>{userName}</option>
+                                                            <option value={partnerName}>{partnerName}</option>
+                                                        </select>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </>
                                 )}
-
-                                {/* Section photos de reçus - en bas */}
-                                <div style={{marginTop: '16px'}}>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        capture="environment"
-                                        multiple
-                                        onChange={handleImageSelect}
-                                        style={{display: 'none'}}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="scan-button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={selectedImages.length >= 3}
-                                        style={{marginBottom: selectedImages.length > 0 ? '12px' : '16px'}}
-                                    >
-                                        📸 {selectedImages.length === 0 ? 'Ajouter des photos de reçu' : `Ajouter une photo (${selectedImages.length}/3)`}
-                                    </button>
-
-                                    {selectedImages.length > 0 && (
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                                            gap: '8px',
-                                            marginBottom: '16px'
-                                        }}>
-                                            {selectedImages.map((img, index) => (
-                                                <div key={index} style={{position: 'relative'}}>
-                                                    <img 
-                                                        src={img.preview} 
-                                                        alt={`Reçu ${index + 1}`}
-                                                        style={{
-                                                            width: '100%',
-                                                            height: '100px',
-                                                            objectFit: 'cover',
-                                                            borderRadius: '6px',
-                                                            border: '1px solid var(--border)'
-                                                        }}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeImage(index)}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: '4px',
-                                                            right: '4px',
-                                                            background: 'rgba(239, 68, 68, 0.9)',
-                                                            border: 'none',
-                                                            borderRadius: '50%',
-                                                            width: '22px',
-                                                            height: '22px',
-                                                            color: 'white',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.75rem',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center'
-                                                        }}
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedImages.length === 3 && (
-                                        <div style={{
-                                            marginBottom: '12px',
-                                            fontSize: '0.75rem',
-                                            color: 'var(--text-secondary)',
-                                            textAlign: 'center'
-                                        }}>
-                                            Maximum de 3 photos atteint
-                                        </div>
-                                    )}
-                                </div>
 
                                 <div style={{display: 'flex', gap: '8px'}}>
                                     <button type="submit" className="btn" style={{flex: 2}}>
