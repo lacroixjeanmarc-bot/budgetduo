@@ -1198,79 +1198,10 @@
         };
 
         const AVAILABLE_ICONS = [
-            // Alimentation & Boissons (compatibilité universelle)
-            '🛒', '🍽️', '🍕', '🍔', '🌮', '🍣', '🍜', '🍝', '🥗', '🥘', 
-            '🍱', '🍛', '🥪', '🌭', '🥙', '🍲', '🥫', '🍿', '🥞', '🍞',
-            '🥐', '🥖', '🥨', '🧀', '🥚', '🍳', '🥓', '🥩', '🍗', '🍖',
-            '🍟', '☕', '🍵', '🧃', '🥤', '🍷', '🍺', '🍻', '🥂', '🍾',
-            '🧊', '🥄', '🍴', '🥢', '🔪', '🍰', '🎂', '🧁', '🥧', '🍮',
-            '🍭', '🍬', '🍫', '🍩', '🍪', '🍯', '🍇', '🍉', '🍊', '🍋',
-            '🍌', '🍍', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🥝', '🥥',
-            '🥑',
-            
-            // Transport
-            '🚗', '🚕', '🚙', '🚌', '🚎', '🚐', '🚚', '🚛', '🚜', '🛴',
-            '🚲', '🛵', '🏍️', '🚂', '🚆', '🚇', '🚈', '🚝', '🚄', '🚅',
-            '✈️', '🚁', '⛵', '🚤', '🚢', '⛽', '🅿️',
-            
-            // Maison & Objets
-            '🏠', '🏡', '🏢', '🏬', '🏪', '🏭', '🛏️', '🛋️', '🚪', '🚿',
-            '🛁', '🚽', '🧹', '🔌', '💡', '🕯️', '🔦', '🔧', '🔨', '⚒️',
-            
-            // Shopping & Vêtements
-            '🛍️', '👕', '👔', '👗', '👘', '👚', '👙', '👠', '👞', '👟',
-            '🥾', '🧦', '🧤', '🧣', '🎩', '👒', '🧢', '👑', '💍', '💎',
-            '👜', '👝', '🎒', '💼',
-            
-            // Divertissement & Sports
-            '🎬', '🎮', '🎯', '🎲', '🎰', '🎳', '🎾', '🏀', '⚽', '⚾',
-            '🏐', '🏈', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🎿', '🏂',
-            '🎣', '🎵', '🎶', '🎤', '🎧', '🎸', '🎹', '🥁', '🎺', '🎷',
-            '🎻', '🎭', '🎪', '🎨', '📺', '📻',
-            
-            // Technologie
-            '💻', '⌨️', '🖥️', '🖨️', '🖱️', '💽', '💾', '💿', '📀', '📱',
-            '📲', '☎️', '📞', '📠', '🔋', '🔌', '💡', '🔦', '📷', '📸',
-            '📹', '🎥', '📽️', '🎬', '📡', '🔭', '🔬',
-            
-            // Santé & Fitness
-            '💊', '💉', '🏥', '⚕️', '🏋️', '🤸', '🧘', '🚴', '🏊', '🧗',
-            '🥊', '🥋',
-            
-            // Éducation & Bureau
-            '📚', '📖', '📕', '📗', '📘', '📙', '📓', '📔', '📒', '📝',
-            '✏️', '✒️', '🖊️', '🖋️', '🖍️', '📏', '📐', '📌', '📍', '✂️',
-            '📁', '📂', '📋', '📊', '📈', '📉', '🎓', '🎒',
-            
-            // Argent & Finance
-            '💰', '💵', '💴', '💶', '💷', '💸', '💳', '💹', '📊', '📈',
-            '📉', '🏦', '🏧', '💎',
-            
-            // Animaux & Nature
-            '🐕', '🐈', '🐎', '🐄', '🐖', '🐏', '🐐', '🐓', '🐇', '🐀',
-            '🐁', '🐹', '🐢', '🐍', '🐠', '🐟', '🌿', '🌱', '🌲', '🌳',
-            '🌴', '🌵', '🌾', '🌷', '🌹', '🌺', '🌻', '🌼', '🌸', '💐',
-            '🍀', '🍁', '🍂', '🍃',
-            
-            // Météo
-            '☀️', '⭐', '🌙', '☁️', '⛅', '🌤️', '🌦️', '🌧️', '🌨️', '🌩️',
-            '❄️', '☃️', '⛄',
-            
-            // Outils
-            '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🔩', '⚙️', '🧰', '🧲',
-            
-            // Voyage
-            '🗺️', '🧳', '⛱️', '🏖️', '🏝️', '🏕️', '⛺', '🏔️', '🏛️', '🏰',
-            '🗼', '🗽', '⛲', '🎡', '🎢',
-            
-            // Symboles
-            '✅', '❌', '⭐', '✨', '💥', '💯', '🔥', '⚡', '💧', '🎁',
-            '🎈', '🎉', '🎊', '🔔', '📢', '📣', '💬', '💭', '🚫', '⛔',
-            '⚠️',
-            
-            // Autres
-            '📦', '📪', '📫', '📬', '📭', '📮', '🎀', '🏷️', '⏰', '⏱️',
-            '⏲️', '⌚', '📅', '📆', '🔑', '🔐', '🔒', '🔓', '🔎', '🔍'
+            '🛒', '🍽️', '🚗', '🎬', '💊', '💡', '🛍️', '📦',
+            '🏠', '✈️', '🎓', '💰', '🎮', '📱', '👕', '⚽',
+            '🍕', '☕', '🎵', '📚', '💻', '🏋️', '🐕', '🌿',
+            '💳', '🎁', '🔧', '🏥', '🚌', '⛽', '🍿', '📺'
         ];
 
         // ========== COMPOSANT PRINCIPAL ==========
@@ -1317,7 +1248,6 @@
             const [newCategoryName, setNewCategoryName] = useState('');
             const [newCategoryIcon, setNewCategoryIcon] = useState('📦');
             const [showIconPicker, setShowIconPicker] = useState(false);
-            const [iconSearchFilter, setIconSearchFilter] = useState('');
             const [viewPhotoModal, setViewPhotoModal] = useState(null);
             const [deletedTransactions, setDeletedTransactions] = useState([]);
             const [editingTransaction, setEditingTransaction] = useState(null);
@@ -2572,15 +2502,7 @@
                                                         type="checkbox"
                                                         id="customAmounts"
                                                         checked={customAmounts}
-                                                        onChange={(e) => {
-                                                            setCustomAmounts(e.target.checked);
-                                                            // Pré-remplir à 50/50 quand on active
-                                                            if (e.target.checked && amount) {
-                                                                const half = (parseFloat(amount) / 2).toFixed(2);
-                                                                setUserCustomAmount(half);
-                                                                setPartnerCustomAmount(half);
-                                                            }
-                                                        }}
+                                                        onChange={(e) => setCustomAmounts(e.target.checked)}
                                                     />
                                                     <label htmlFor="customAmounts">
                                                         Montants personnalisés
@@ -2595,17 +2517,9 @@
                                                                 type="number"
                                                                 step="0.01"
                                                                 value={userCustomAmount}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setUserCustomAmount(val);
-                                                                    // Calculer automatiquement l'autre montant
-                                                                    if (val && amount) {
-                                                                        const remaining = parseFloat(amount) - parseFloat(val);
-                                                                        setPartnerCustomAmount(remaining > 0 ? remaining.toFixed(2) : '0');
-                                                                    }
-                                                                }}
+                                                                onChange={(e) => setUserCustomAmount(e.target.value)}
                                                                 placeholder="0.00"
-                                                                max={amount}
+                                                                required
                                                             />
                                                         </div>
                                                         <div className="input-group">
@@ -2614,17 +2528,9 @@
                                                                 type="number"
                                                                 step="0.01"
                                                                 value={partnerCustomAmount}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setPartnerCustomAmount(val);
-                                                                    // Calculer automatiquement l'autre montant
-                                                                    if (val && amount) {
-                                                                        const remaining = parseFloat(amount) - parseFloat(val);
-                                                                        setUserCustomAmount(remaining > 0 ? remaining.toFixed(2) : '0');
-                                                                    }
-                                                                }}
+                                                                onChange={(e) => setPartnerCustomAmount(e.target.value)}
                                                                 placeholder="0.00"
-                                                                max={amount}
+                                                                required
                                                             />
                                                         </div>
                                                     </div>
