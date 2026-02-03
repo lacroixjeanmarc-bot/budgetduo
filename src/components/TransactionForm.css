@@ -120,9 +120,31 @@
     accent-color: var(--accent);
 }
 
+.form-checkbox input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .form-checkbox span {
     font-size: 0.9rem;
     color: var(--text-primary);
+}
+
+.custom-amounts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.form-buttons .btn-submit {
+    flex: 2;
 }
 
 .btn-submit {
@@ -147,6 +169,25 @@
     transform: translateY(0);
 }
 
+.btn-cancel {
+    flex: 1;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: var(--bg-card);
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .form-type-selector {
@@ -155,5 +196,14 @@
     
     .transaction-form-container {
         padding: 16px;
+    }
+
+    .form-buttons {
+        flex-direction: column;
+    }
+
+    .form-buttons .btn-submit,
+    .form-buttons .btn-cancel {
+        flex: 1;
     }
 }

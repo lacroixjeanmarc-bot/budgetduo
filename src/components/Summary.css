@@ -2,38 +2,39 @@
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 20px;
 }
 
 .summary-container h2 {
-    font-size: 1.3rem;
-    margin-bottom: 20px;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
     color: var(--text-primary);
 }
 
 .summary-container h3 {
-    font-size: 1.1rem;
-    margin-bottom: 12px;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
     color: var(--text-primary);
 }
 
-/* Cartes principales */
+/* Cartes principales - Version compacte */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .summary-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 20px;
+    gap: 8px;
+    padding: 14px 12px;
     background: var(--bg-card);
     border: 2px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     transition: all 0.2s;
 }
 
@@ -59,172 +60,182 @@
 }
 
 .card-icon {
-    font-size: 2.5rem;
-    flex-shrink: 0;
+    font-size: 1.8rem;
 }
 
 .card-content {
-    flex: 1;
+    text-align: center;
+    width: 100%;
 }
 
 .card-label {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .card-value {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
-/* Sections */
+/* Sections compactes */
 .summary-section {
-    margin-bottom: 24px;
-    padding-top: 20px;
+    margin-bottom: 16px;
+    padding-top: 14px;
     border-top: 1px solid var(--border);
 }
 
-/* Dépenses par personne */
+/* Dépenses par personne - Inline */
 .person-expenses {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
 .person-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
+    padding: 10px 12px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 .person-name {
     font-weight: 600;
+    font-size: 0.9rem;
     color: var(--text-primary);
 }
 
 .person-amount {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--accent);
 }
 
-/* Alerte qui doit quoi */
+/* Alerte compacte */
 .owes-alert {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
+    gap: 10px;
+    padding: 10px 12px;
     background: rgba(0, 102, 255, 0.1);
     border: 1px solid rgba(0, 102, 255, 0.3);
-    border-radius: 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
 }
 
 .owes-icon {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     flex-shrink: 0;
 }
 
 .owes-text {
     color: var(--text-primary);
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .owes-text strong {
     color: var(--accent);
 }
 
-/* Catégories */
+/* Catégories - Top 5 */
 .category-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .category-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px;
+    padding: 8px 10px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    gap: 16px;
+    border-radius: 6px;
+    gap: 12px;
 }
 
 .category-info {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-width: 150px;
+    gap: 8px;
+    min-width: 120px;
 }
 
 .category-icon {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
 }
 
 .category-name {
     font-weight: 500;
+    font-size: 0.85rem;
     color: var(--text-primary);
 }
 
 .category-stats {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex: 1;
 }
 
 .category-bar-container {
     flex: 1;
-    height: 8px;
+    height: 6px;
     background: var(--bg-secondary);
-    border-radius: 4px;
+    border-radius: 3px;
     overflow: hidden;
+    min-width: 60px;
 }
 
 .category-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), #00A3FF);
-    border-radius: 4px;
+    border-radius: 3px;
     transition: width 0.3s ease;
 }
 
 .category-amount {
     font-weight: 600;
+    font-size: 0.85rem;
     color: var(--text-primary);
-    min-width: 90px;
+    min-width: 70px;
     text-align: right;
 }
 
 .category-percentage {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    min-width: 40px;
+    min-width: 35px;
     text-align: right;
 }
 
 /* État vide */
 .summary-empty {
     text-align: center;
-    padding: 40px 20px;
+    padding: 30px 20px;
     color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .summary-empty p:first-child {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
+    font-size: 1rem;
+    margin-bottom: 6px;
 }
 
 /* Responsive */
 @media (max-width: 600px) {
     .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .person-expenses {
         grid-template-columns: 1fr;
     }
 

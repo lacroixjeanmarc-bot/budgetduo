@@ -77,7 +77,7 @@ function Summary({ transactions, session, categories }) {
                 <div className="summary-card expense">
                     <div className="card-icon">💸</div>
                     <div className="card-content">
-                        <div className="card-label">Dépenses totales</div>
+                        <div className="card-label">Dépenses</div>
                         <div className="card-value">{formatAmount(stats.totalExpenses, session.currency)}</div>
                     </div>
                 </div>
@@ -85,7 +85,7 @@ function Summary({ transactions, session, categories }) {
                 <div className="summary-card income">
                     <div className="card-icon">💰</div>
                     <div className="card-content">
-                        <div className="card-label">Revenus totaux</div>
+                        <div className="card-label">Revenus</div>
                         <div className="card-value">{formatAmount(stats.totalIncome, session.currency)}</div>
                     </div>
                 </div>
@@ -101,7 +101,7 @@ function Summary({ transactions, session, categories }) {
 
             {/* Dépenses par personne */}
             <div className="summary-section">
-                <h3>👥 Dépenses par personne</h3>
+                <h3>👥 Par personne</h3>
                 <div className="person-expenses">
                     <div className="person-item">
                         <span className="person-name">{session.userName}</span>
@@ -126,13 +126,14 @@ function Summary({ transactions, session, categories }) {
                 )}
             </div>
 
-            {/* Par catégorie */}
+            {/* Par catégorie - Top 5 */}
             {Object.keys(stats.categoryTotals).length > 0 && (
                 <div className="summary-section">
-                    <h3>📂 Par catégorie</h3>
+                    <h3>📂 Top catégories</h3>
                     <div className="category-list">
                         {Object.entries(stats.categoryTotals)
                             .sort((a, b) => b[1] - a[1])
+                            .slice(0, 5)
                             .map(([categoryKey, amount]) => {
                                 const category = categories[categoryKey];
                                 const percentage = (amount / stats.totalExpenses) * 100;
@@ -172,7 +173,7 @@ function Summary({ transactions, session, categories }) {
             {transactions.length === 0 && (
                 <div className="summary-empty">
                     <p>Aucune transaction ce mois-ci.</p>
-                    <p>Ajoutez des transactions pour voir les statistiques !</p>
+                    <p>Ajoutez des transactions pour voir les stats !</p>
                 </div>
             )}
         </div>

@@ -5,7 +5,9 @@ import './TransactionForm.css';
 function TransactionForm({ 
     session, 
     categories = DEFAULT_CATEGORIES,
-    onSubmit 
+    onSubmit,
+    editingTransaction = null,
+    onCancelEdit = null
 }) {
     const [transactionType, setTransactionType] = useState('expense');
     const [amount, setAmount] = useState('');
@@ -16,6 +18,9 @@ function TransactionForm({
     const [beneficiary, setBeneficiary] = useState(session.userName);
     const [isShared, setIsShared] = useState(true);
     const [isPersonal, setIsPersonal] = useState(false);
+    const [customAmounts, setCustomAmounts] = useState(false);
+    const [userCustomAmount, setUserCustomAmount] = useState('');
+    const [partnerCustomAmount, setPartnerCustomAmount] = useState('');
 
     // Initialise la date à aujourd'hui
     useEffect(() => {
@@ -26,12 +31,57 @@ function TransactionForm({
         setDate(`${year}-${month}-${day}`);
     }, []);
 
+    // Charge la transaction à éditer
+    useEffect(() => {
+        if (editingTransaction) {
+            setTransactionType(editingTransaction.type);
+            setAmount(editingTransaction.amount.toString());
+            setVendor(editingTransaction.vendor);
+            setCategory(editingTransaction.category);
+            setDate(editingTransaction.date);
+            setPayer(editingTransaction.payer);
+            setBeneficiary(editingTransaction.beneficiary);
+            setIsShared(editingTransaction.isShared || false);
+            setIsPersonal(editingTransaction.isPersonal || false);
+            
+            if (editingTransaction.userShare && editingTransaction.partnerShare) {
+                const totalAmount = editingTransaction.amount;
+                const half = totalAmount / 2;
+                if (Math.abs(editingTransaction.userShare - half) > 0.01) {
+                    setCustomAmounts(true);
+                    setUserCustomAmount(editingTransaction.userShare.toString());
+                    setPartnerCustomAmount(editingTransaction.partnerShare.toString());
+                }
+            }
+        }
+    }, [editingTransaction]);
+
     // Ajuste le bénéficiaire pour les transferts
     useEffect(() => {
         if (transactionType === 'transfer') {
             setBeneficiary(payer === session.userName ? session.partnerName : session.userName);
         }
     }, [transactionType, payer, session.userName, session.partnerName]);
+
+    // Calcul automatique des montants personnalisés
+    useEffect(() => {
+        if (customAmounts && amount) {
+            const totalAmount = parseFloat(amount);
+            if (!isNaN(totalAmount)) {
+                if (userCustomAmount && userCustomAmount !== '') {
+                    const userAmt = parseFloat(userCustomAmount);
+                    if (!isNaN(userAmt)) {
+                        setPartnerCustomAmount((totalAmount - userAmt).toFixed(2));
+                    }
+                } else if (partnerCustomAmount && partnerCustomAmount !== '') {
+                    const partnerAmt = parseFloat(partnerCustomAmount);
+                    if (!isNaN(partnerAmt)) {
+                        setUserCustomAmount((totalAmount - partnerAmt).toFixed(2));
+                    }
+                }
+            }
+        }
+    }, [customAmounts, amount, userCustomAmount, partnerCustomAmount]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -47,7 +97,7 @@ function TransactionForm({
             vendor: vendor.trim(),
             category,
             date,
-            timestamp: Date.now(),
+            timestamp: editingTransaction ? editingTransaction.timestamp : Date.now(),
             payer,
             beneficiary,
             isShared: transactionType === 'expense' ? isShared : false,
@@ -57,8 +107,18 @@ function TransactionForm({
         // Calcul des parts si dépense partagée
         if (transactionType === 'expense' && isShared) {
             const totalAmount = parseFloat(amount);
-            transaction.userShare = totalAmount / 2;
-            transaction.partnerShare = totalAmount / 2;
+            if (customAmounts) {
+                transaction.userShare = parseFloat(userCustomAmount) || 0;
+                transaction.partnerShare = parseFloat(partnerCustomAmount) || 0;
+            } else {
+                transaction.userShare = totalAmount / 2;
+                transaction.partnerShare = totalAmount / 2;
+            }
+        }
+
+        // Si on édite, on ajoute l'ID
+        if (editingTransaction) {
+            transaction.id = editingTransaction.id;
         }
 
         onSubmit(transaction);
@@ -67,11 +127,18 @@ function TransactionForm({
         setAmount('');
         setVendor('');
         setCategory('groceries');
+        setCustomAmounts(false);
+        setUserCustomAmount('');
+        setPartnerCustomAmount('');
+        
+        if (onCancelEdit) {
+            onCancelEdit();
+        }
     };
 
     return (
         <div className="transaction-form-container">
-            <h2>➕ Nouvelle transaction</h2>
+            <h2>{editingTransaction ? '✏️ Modifier la transaction' : '➕ Nouvelle transaction'}</h2>
             
             <form onSubmit={handleSubmit} className="transaction-form">
                 {/* Type de transaction */}
@@ -191,16 +258,76 @@ function TransactionForm({
 
                 {/* Partage (pour dépenses uniquement) */}
                 {transactionType === 'expense' && (
-                    <div className="form-checkbox">
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={isShared}
-                                onChange={(e) => setIsShared(e.target.checked)}
-                            />
-                            <span>Dépense partagée (50/50)</span>
-                        </label>
-                    </div>
+                    <>
+                        <div className="form-checkbox">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={isShared}
+                                    disabled={isPersonal}
+                                    onChange={(e) => {
+                                        setIsShared(e.target.checked);
+                                        if (!e.target.checked) {
+                                            setCustomAmounts(false);
+                                            setUserCustomAmount('');
+                                            setPartnerCustomAmount('');
+                                        }
+                                    }}
+                                />
+                                <span>Dépense partagée</span>
+                            </label>
+                        </div>
+
+                        {/* Montants personnalisés */}
+                        {isShared && (
+                            <div className="form-checkbox">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={customAmounts}
+                                        onChange={(e) => {
+                                            setCustomAmounts(e.target.checked);
+                                            if (!e.target.checked) {
+                                                setUserCustomAmount('');
+                                                setPartnerCustomAmount('');
+                                            }
+                                        }}
+                                    />
+                                    <span>Montants personnalisés</span>
+                                </label>
+                            </div>
+                        )}
+
+                        {/* Champs montants personnalisés */}
+                        {isShared && customAmounts && (
+                            <div className="custom-amounts-grid">
+                                <div className="form-field">
+                                    <label>{session.userName}</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={userCustomAmount}
+                                        onChange={(e) => setUserCustomAmount(e.target.value)}
+                                        placeholder="0.00"
+                                        className="form-input"
+                                    />
+                                </div>
+                                <div className="form-field">
+                                    <label>{session.partnerName}</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={partnerCustomAmount}
+                                        onChange={(e) => setPartnerCustomAmount(e.target.value)}
+                                        placeholder="0.00"
+                                        className="form-input"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Transaction personnelle */}
@@ -209,16 +336,45 @@ function TransactionForm({
                         <input
                             type="checkbox"
                             checked={isPersonal}
-                            onChange={(e) => setIsPersonal(e.target.checked)}
+                            onChange={(e) => {
+                                setIsPersonal(e.target.checked);
+                                if (e.target.checked) {
+                                    setIsShared(false);
+                                    setCustomAmounts(false);
+                                    setUserCustomAmount('');
+                                    setPartnerCustomAmount('');
+                                }
+                            }}
                         />
                         <span>Transaction personnelle (visible uniquement par moi)</span>
                     </label>
                 </div>
 
-                {/* Bouton soumettre */}
-                <button type="submit" className="btn-submit">
-                    ✅ Ajouter la transaction
-                </button>
+                {/* Boutons soumettre */}
+                <div className="form-buttons">
+                    <button type="submit" className="btn-submit">
+                        {editingTransaction ? '✅ Enregistrer' : '✅ Ajouter'}
+                    </button>
+                    {editingTransaction && (
+                        <button 
+                            type="button" 
+                            className="btn-cancel"
+                            onClick={() => {
+                                setAmount('');
+                                setVendor('');
+                                setCategory('groceries');
+                                setCustomAmounts(false);
+                                setUserCustomAmount('');
+                                setPartnerCustomAmount('');
+                                if (onCancelEdit) {
+                                    onCancelEdit();
+                                }
+                            }}
+                        >
+                            ❌ Annuler
+                        </button>
+                    )}
+                </div>
             </form>
         </div>
     );

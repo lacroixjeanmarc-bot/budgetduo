@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react';
 import { database } from './firebase';
-import { ref, onValue, push, set } from 'firebase/database';
+import { ref, onValue, push, set, remove } from 'firebase/database';
 import Setup from './components/Setup';
 import TransactionForm from './components/TransactionForm';
+import Summary from './components/Summary';
 import { DEFAULT_CATEGORIES } from './constants/categories';
 import { formatAmount, formatDate } from './utils/formatters';
 import './App.css';
-import Summary from './components/Summary';
 
 function App() {
   const [isSetup, setIsSetup] = useState(false);
   const [session, setSession] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [personalTransactions, setPersonalTransactions] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [activeTab, setActiveTab] = useState('add');
+  const [currentUserName, setCurrentUserName] = useState('');
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   // Vérifie si une session existe au démarrage
   useEffect(() => {
@@ -22,6 +26,7 @@ function App() {
         const sessionData = JSON.parse(savedSession);
         setSession(sessionData);
         setIsSetup(true);
+        setCurrentUserName(sessionData.userName);
       } catch (error) {
         console.error('Session invalide, nettoyage...', error);
         localStorage.removeItem('budgetduo_session');
@@ -30,7 +35,7 @@ function App() {
     }
   }, []);
 
-  // Charge les transactions quand la session est prête
+  // Charge les transactions partagées
   useEffect(() => {
     if (session?.code) {
       const transactionsRef = ref(database, `sessions/${session.code}/transactions`);
@@ -61,18 +66,66 @@ function App() {
     }
   }, [session]);
 
+  // Charge les transactions personnelles
+  useEffect(() => {
+    if (session?.code && currentUserName) {
+      const personalRef = ref(database, `sessions/${session.code}/personal/${currentUserName}/transactions`);
+      
+      onValue(personalRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const personalList = Object.entries(data).map(([id, trans]) => ({
+            id,
+            ...trans
+          }));
+          setPersonalTransactions(personalList);
+        } else {
+          setPersonalTransactions([]);
+        }
+      });
+    }
+  }, [session, currentUserName]);
+
   // Callback quand le setup est complété
   const handleSetupComplete = (sessionData) => {
     setSession(sessionData);
     setIsSetup(true);
+    setCurrentUserName(sessionData.userName);
   };
 
-  // Ajoute une transaction
+  // Ajoute ou modifie une transaction
   const handleAddTransaction = (transaction) => {
-    const transactionsRef = ref(database, `sessions/${session.code}/transactions`);
-    const newTransactionRef = push(transactionsRef);
-    set(newTransactionRef, transaction);
-    console.log('✅ Transaction ajoutée:', transaction);
+    if (transaction.id) {
+      // MODIFICATION d'une transaction existante
+      if (transaction.isPersonal) {
+        const transactionRef = ref(database, `sessions/${session.code}/personal/${currentUserName}/transactions/${transaction.id}`);
+        set(transactionRef, transaction);
+      } else {
+        const transactionRef = ref(database, `sessions/${session.code}/transactions/${transaction.id}`);
+        set(transactionRef, transaction);
+      }
+    } else {
+      // AJOUT d'une nouvelle transaction
+      if (transaction.isPersonal) {
+        const personalRef = ref(database, `sessions/${session.code}/personal/${currentUserName}/transactions`);
+        const newTransactionRef = push(personalRef);
+        set(newTransactionRef, transaction);
+      } else {
+        const transactionsRef = ref(database, `sessions/${session.code}/transactions`);
+        const newTransactionRef = push(transactionsRef);
+        set(newTransactionRef, transaction);
+      }
+    }
+    
+    // Réinitialise l'édition
+    setEditingTransaction(null);
+    setActiveTab(transaction.isPersonal ? 'personal' : 'list');
+  };
+
+  // Commence l'édition d'une transaction
+  const handleEditTransaction = (transaction, isPersonal) => {
+    setEditingTransaction({ ...transaction, isPersonal });
+    setActiveTab('add');
   };
 
   // Si pas encore configuré, affiche le Setup
@@ -80,7 +133,9 @@ function App() {
     return <Setup onComplete={handleSetupComplete} />;
   }
 
-  // Interface principale
+  // Filtrer les transactions partagées
+  const sharedTransactions = transactions.filter(tx => !tx.isPersonal);
+
   return (
     <div className="app-container">
       <div className="header">
@@ -101,53 +156,140 @@ function App() {
         </button>
       </div>
 
-      {/* Formulaire de transaction */}
-      <TransactionForm 
-        session={session}
-        categories={categories}
-        onSubmit={handleAddTransaction}
-      />
+      {/* Navigation par onglets */}
+      <div className="tabs-navigation">
+        <button
+          className={`tab-btn ${activeTab === 'add' ? 'active' : ''}`}
+          onClick={() => setActiveTab('add')}
+        >
+          ➕ Ajouter
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'list' ? 'active' : ''}`}
+          onClick={() => setActiveTab('list')}
+        >
+          📋 Liste {sharedTransactions.length > 0 && `(${sharedTransactions.length})`}
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`}
+          onClick={() => setActiveTab('personal')}
+        >
+          👤 Personnel {personalTransactions.length > 0 && `(${personalTransactions.length})`}
+        </button>
+      </div>
 
-      {/* Résumé/Statistiques */}
-      <Summary 
-        transactions={transactions}
-        session={session}
-        categories={categories}
-      />
+      {/* Contenu selon l'onglet actif */}
+      <div className="tab-content">
+        {/* Onglet Ajouter */}
+        {activeTab === 'add' && (
+          <TransactionForm 
+            session={session}
+            categories={categories}
+            onSubmit={handleAddTransaction}
+            editingTransaction={editingTransaction}
+            onCancelEdit={() => setEditingTransaction(null)}
+          />
+        )}
 
-      {/* Liste des transactions */}
-      <div className="transactions-section">
-        <h2>📋 Transactions ({transactions.length})</h2>
-        {transactions.length === 0 ? (
-          <div className="empty-state">
-            <p>Aucune transaction pour le moment.</p>
-            <p>Ajoutez votre première transaction ci-dessus ! 👆</p>
-          </div>
-        ) : (
-          <div className="transactions-list">
-            {transactions
-              .sort((a, b) => b.timestamp - a.timestamp)
-              .map(tx => (
-                <div key={tx.id} className="transaction-item">
-                  <div className="transaction-icon">
-                    {categories[tx.category]?.icon || '📦'}
-                  </div>
-                  <div className="transaction-details">
-                    <div className="transaction-vendor">{tx.vendor}</div>
-                    <div className="transaction-meta">
-                      {formatDate(tx.date)} • {categories[tx.category]?.name || tx.category}
-                      {tx.isShared && ' • Partagé'}
-                      {tx.isPersonal && ' • Personnel'}
-                    </div>
-                  </div>
-                  <div className={`transaction-amount ${tx.type}`}>
-                    {tx.type === 'income' && '+'}
-                    {tx.type === 'expense' && '-'}
-                    {formatAmount(tx.amount, session.currency)}
-                  </div>
+        {/* Onglet Liste (transactions partagées) */}
+        {activeTab === 'list' && (
+          <>
+            <Summary 
+              transactions={sharedTransactions}
+              session={session}
+              categories={categories}
+            />
+            
+            <div className="transactions-section">
+              <h2>📋 Transactions partagées</h2>
+              {sharedTransactions.length === 0 ? (
+                <div className="empty-state">
+                  <p>Aucune transaction partagée.</p>
                 </div>
-              ))}
-          </div>
+              ) : (
+                <div className="transactions-list">
+                  {sharedTransactions
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .map(tx => (
+                      <div key={tx.id} className="transaction-item">
+                        <div className="transaction-icon">
+                          {categories[tx.category]?.icon || '📦'}
+                        </div>
+                        <div className="transaction-details">
+                          <div className="transaction-vendor">{tx.vendor}</div>
+                          <div className="transaction-meta">
+                            {formatDate(tx.date)} • {categories[tx.category]?.name || tx.category}
+                            {tx.isShared && ' • Partagé'}
+                          </div>
+                        </div>
+                        <div className={`transaction-amount ${tx.type}`}>
+                          {tx.type === 'income' && '+'}
+                          {tx.type === 'expense' && '-'}
+                          {formatAmount(tx.amount, session.currency)}
+                        </div>
+                        <button
+                          className="btn-edit"
+                          onClick={() => handleEditTransaction(tx, false)}
+                          title="Modifier"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Onglet Personnel */}
+        {activeTab === 'personal' && (
+          <>
+            <Summary 
+              transactions={personalTransactions}
+              session={session}
+              categories={categories}
+            />
+            
+            <div className="transactions-section">
+              <h2>👤 Transactions personnelles</h2>
+              {personalTransactions.length === 0 ? (
+                <div className="empty-state">
+                  <p>Aucune transaction personnelle.</p>
+                </div>
+              ) : (
+                <div className="transactions-list">
+                  {personalTransactions
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .map(tx => (
+                      <div key={tx.id} className="transaction-item">
+                        <div className="transaction-icon">
+                          {categories[tx.category]?.icon || '📦'}
+                        </div>
+                        <div className="transaction-details">
+                          <div className="transaction-vendor">{tx.vendor}</div>
+                          <div className="transaction-meta">
+                            {formatDate(tx.date)} • {categories[tx.category]?.name || tx.category}
+                          </div>
+                        </div>
+                        <div className={`transaction-amount ${tx.type}`}>
+                          {tx.type === 'income' && '+'}
+                          {tx.type === 'expense' && '-'}
+                          {formatAmount(tx.amount, session.currency)}
+                        </div>
+                        <button
+                          className="btn-edit"
+                          onClick={() => handleEditTransaction(tx, true)}
+                          title="Modifier"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
