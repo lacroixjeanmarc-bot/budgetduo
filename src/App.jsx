@@ -6,6 +6,7 @@ import TransactionForm from './components/TransactionForm';
 import { DEFAULT_CATEGORIES } from './constants/categories';
 import { formatAmount, formatDate } from './utils/formatters';
 import './App.css';
+import Summary from './components/Summary';
 
 function App() {
   const [isSetup, setIsSetup] = useState(false);
@@ -105,6 +106,13 @@ function App() {
         session={session}
         categories={categories}
         onSubmit={handleAddTransaction}
+      />
+
+      {/* Résumé/Statistiques */}
+      <Summary 
+        transactions={transactions}
+        session={session}
+        categories={categories}
       />
 
       {/* Liste des transactions */}

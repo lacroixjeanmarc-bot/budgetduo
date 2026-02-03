@@ -1,0 +1,239 @@
+.summary-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.summary-container h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.summary-container h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+/* Cartes principales */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.summary-card.expense {
+    border-color: #3B82F6;
+}
+
+.summary-card.income {
+    border-color: #10B981;
+}
+
+.summary-card.balance.positive {
+    border-color: #10B981;
+}
+
+.summary-card.balance.negative {
+    border-color: #EF4444;
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Sections */
+.summary-section {
+    margin-bottom: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+/* Dépenses par personne */
+.person-expenses {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.person-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.person-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.person-amount {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+/* Alerte qui doit quoi */
+.owes-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(0, 102, 255, 0.1);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 8px;
+}
+
+.owes-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.owes-text {
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.owes-text strong {
+    color: var(--accent);
+}
+
+/* Catégories */
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    gap: 16px;
+}
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 150px;
+}
+
+.category-icon {
+    font-size: 1.5rem;
+}
+
+.category-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.category-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.category-bar-container {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.category-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #00A3FF);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.category-amount {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 90px;
+    text-align: right;
+}
+
+.category-percentage {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-width: 40px;
+    text-align: right;
+}
+
+/* État vide */
+.summary-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.summary-empty p:first-child {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .category-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .category-stats {
+        width: 100%;
+    }
+}
