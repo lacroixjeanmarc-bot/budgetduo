@@ -1,0 +1,151 @@
+.setup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.setup-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin: 20px;
+}
+
+.setup-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.setup-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), #00A3FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.setup-tagline {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.setup-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    gap: 16px;
+}
+
+.progress-step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s;
+}
+
+.progress-step.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.progress-line {
+    width: 60px;
+    height: 2px;
+    background: var(--border);
+    transition: all 0.3s;
+}
+
+.progress-line.active {
+    background: var(--accent);
+}
+
+.setup-form {
+    width: 100%;
+}
+
+.setup-step h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.setup-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.setup-field {
+    margin-bottom: 20px;
+}
+
+.setup-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.setup-input,
+.setup-select {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.setup-input:focus,
+.setup-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+}
+
+.setup-hint {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0, 102, 255, 0.1);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    line-height: 1.4;
+}
+
+.setup-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.setup-buttons .btn-secondary {
+    flex: 1;
+}
+
+.setup-buttons .btn-primary {
+    flex: 2;
+}
