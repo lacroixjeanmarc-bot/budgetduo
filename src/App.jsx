@@ -208,34 +208,46 @@ function App() {
                 </div>
               ) : (
                 <div className="transactions-list">
-                  {sharedTransactions
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .map(tx => (
-                      <div key={tx.id} className="transaction-item">
-                        <div className="transaction-icon">
-                          {categories[tx.category]?.icon || '📦'}
-                        </div>
-                        <div className="transaction-details">
-                          <div className="transaction-vendor">{tx.vendor}</div>
-                          <div className="transaction-meta">
-                            {formatDate(tx.date)} • {categories[tx.category]?.name || tx.category}
-                            {tx.isShared && ' • Partagé'}
+                  {(() => {
+                    // Grouper les transactions par date
+                    const groupedByDate = {};
+                    sharedTransactions
+                      .sort((a, b) => b.timestamp - a.timestamp)
+                      .forEach(tx => {
+                        const dateKey = tx.date;
+                        if (!groupedByDate[dateKey]) {
+                          groupedByDate[dateKey] = [];
+                        }
+                        groupedByDate[dateKey].push(tx);
+                      });
+
+                    return Object.entries(groupedByDate).map(([date, txs]) => (
+                      <div key={date} className="transaction-date-group">
+                        <div className="transaction-date-header">{formatDate(date)}</div>
+                        {txs.map(tx => (
+                          <div key={tx.id} className="transaction-item-compact">
+                            <div className="transaction-icon-compact">
+                              {categories[tx.category]?.icon || '📦'}
+                            </div>
+                            <div className="transaction-details-compact">
+                              <div className="transaction-vendor-compact">{tx.vendor}</div>
+                              <div className="transaction-payer">Payé par {tx.payer}</div>
+                            </div>
+                            <div className={`transaction-amount-compact ${tx.type}`}>
+                              {formatAmount(tx.amount, session.currency)}
+                            </div>
+                            <button
+                              className="btn-edit-compact"
+                              onClick={() => handleEditTransaction(tx, false)}
+                              title="Modifier"
+                            >
+                              ✏️
+                            </button>
                           </div>
-                        </div>
-                        <div className={`transaction-amount ${tx.type}`}>
-                          {tx.type === 'income' && '+'}
-                          {tx.type === 'expense' && '-'}
-                          {formatAmount(tx.amount, session.currency)}
-                        </div>
-                        <button
-                          className="btn-edit"
-                          onClick={() => handleEditTransaction(tx, false)}
-                          title="Modifier"
-                        >
-                          ✏️
-                        </button>
+                        ))}
                       </div>
-                    ))}
+                    ));
+                  })()}
                 </div>
               )}
             </div>
@@ -246,7 +258,7 @@ function App() {
         {activeTab === 'personal' && (
           <>
             <Summary 
-              transactions={personalTransactions}
+              transactions={[...transactions, ...personalTransactions]}
               session={session}
               categories={categories}
             />
@@ -259,33 +271,45 @@ function App() {
                 </div>
               ) : (
                 <div className="transactions-list">
-                  {personalTransactions
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .map(tx => (
-                      <div key={tx.id} className="transaction-item">
-                        <div className="transaction-icon">
-                          {categories[tx.category]?.icon || '📦'}
-                        </div>
-                        <div className="transaction-details">
-                          <div className="transaction-vendor">{tx.vendor}</div>
-                          <div className="transaction-meta">
-                            {formatDate(tx.date)} • {categories[tx.category]?.name || tx.category}
+                  {(() => {
+                    const groupedByDate = {};
+                    personalTransactions
+                      .sort((a, b) => b.timestamp - a.timestamp)
+                      .forEach(tx => {
+                        const dateKey = tx.date;
+                        if (!groupedByDate[dateKey]) {
+                          groupedByDate[dateKey] = [];
+                        }
+                        groupedByDate[dateKey].push(tx);
+                      });
+
+                    return Object.entries(groupedByDate).map(([date, txs]) => (
+                      <div key={date} className="transaction-date-group">
+                        <div className="transaction-date-header">{formatDate(date)}</div>
+                        {txs.map(tx => (
+                          <div key={tx.id} className="transaction-item-compact">
+                            <div className="transaction-icon-compact">
+                              {categories[tx.category]?.icon || '📦'}
+                            </div>
+                            <div className="transaction-details-compact">
+                              <div className="transaction-vendor-compact">{tx.vendor}</div>
+                              <div className="transaction-payer">Payé par {tx.payer}</div>
+                            </div>
+                            <div className={`transaction-amount-compact ${tx.type}`}>
+                              {formatAmount(tx.amount, session.currency)}
+                            </div>
+                            <button
+                              className="btn-edit-compact"
+                              onClick={() => handleEditTransaction(tx, true)}
+                              title="Modifier"
+                            >
+                              ✏️
+                            </button>
                           </div>
-                        </div>
-                        <div className={`transaction-amount ${tx.type}`}>
-                          {tx.type === 'income' && '+'}
-                          {tx.type === 'expense' && '-'}
-                          {formatAmount(tx.amount, session.currency)}
-                        </div>
-                        <button
-                          className="btn-edit"
-                          onClick={() => handleEditTransaction(tx, true)}
-                          title="Modifier"
-                        >
-                          ✏️
-                        </button>
+                        ))}
                       </div>
-                    ))}
+                    ));
+                  })()}
                 </div>
               )}
             </div>

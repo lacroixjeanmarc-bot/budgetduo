@@ -1,191 +1,107 @@
-.summary-container {
+.summary-container-minimal {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.summary-container h2 {
-    font-size: 1.1rem;
+    padding: 16px;
     margin-bottom: 16px;
-    color: var(--text-primary);
 }
 
-.summary-container h3 {
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-    color: var(--text-primary);
-}
-
-/* Cartes principales - Version compacte */
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.summary-card {
+/* Liste simple et compacte */
+.summary-list {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 8px;
-    padding: 14px 12px;
-    background: var(--bg-card);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    transition: all 0.2s;
 }
 
-.summary-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.summary-card.expense {
-    border-color: #3B82F6;
-}
-
-.summary-card.income {
-    border-color: #10B981;
-}
-
-.summary-card.balance.positive {
-    border-color: #10B981;
-}
-
-.summary-card.balance.negative {
-    border-color: #EF4444;
-}
-
-.card-icon {
-    font-size: 1.8rem;
-}
-
-.card-content {
-    text-align: center;
-    width: 100%;
-}
-
-.card-label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-bottom: 2px;
-}
-
-.card-value {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-/* Sections compactes */
-.summary-section {
-    margin-bottom: 16px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
-}
-
-/* Dépenses par personne - Inline */
-.person-expenses {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.person-item {
+.summary-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px 12px;
+    gap: 10px;
+    padding: 8px 12px;
     background: var(--bg-card);
-    border: 1px solid var(--border);
     border-radius: 6px;
-}
-
-.person-name {
-    font-weight: 600;
     font-size: 0.9rem;
-    color: var(--text-primary);
 }
 
-.person-amount {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--accent);
-}
-
-/* Alerte compacte */
-.owes-alert {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: rgba(0, 102, 255, 0.1);
-    border: 1px solid rgba(0, 102, 255, 0.3);
-    border-radius: 6px;
-    font-size: 0.85rem;
-}
-
-.owes-icon {
+.summary-icon {
     font-size: 1.2rem;
     flex-shrink: 0;
 }
 
-.owes-text {
+.summary-label {
+    flex: 1;
     color: var(--text-primary);
-    line-height: 1.4;
+    font-weight: 500;
 }
 
-.owes-text strong {
-    color: var(--accent);
+.summary-value {
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
-/* Catégories - Top 5 */
-.category-list {
+.summary-value.expense {
+    color: #EF4444;
+}
+
+.summary-value.income {
+    color: #10B981;
+}
+
+.summary-value.positive {
+    color: #10B981;
+}
+
+.summary-value.negative {
+    color: #EF4444;
+}
+
+/* Section catégories minimaliste */
+.category-section-minimal {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.category-list-minimal {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.category-item {
+.category-item-minimal {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
     gap: 12px;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border-radius: 6px;
 }
 
-.category-info {
+.category-info-minimal {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 120px;
 }
 
-.category-icon {
+.category-icon-minimal {
     font-size: 1.3rem;
 }
 
-.category-name {
+.category-name-minimal {
     font-weight: 500;
     font-size: 0.85rem;
     color: var(--text-primary);
 }
 
-.category-stats {
+.category-stats-minimal {
     display: flex;
     align-items: center;
     gap: 10px;
     flex: 1;
 }
 
-.category-bar-container {
+.category-bar-container-minimal {
     flex: 1;
     height: 6px;
     background: var(--bg-secondary);
@@ -194,57 +110,17 @@
     min-width: 60px;
 }
 
-.category-bar {
+.category-bar-minimal {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), #00A3FF);
     border-radius: 3px;
     transition: width 0.3s ease;
 }
 
-.category-amount {
+.category-amount-minimal {
     font-weight: 600;
     font-size: 0.85rem;
     color: var(--text-primary);
     min-width: 70px;
     text-align: right;
-}
-
-.category-percentage {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    min-width: 35px;
-    text-align: right;
-}
-
-/* État vide */
-.summary-empty {
-    text-align: center;
-    padding: 30px 20px;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.summary-empty p:first-child {
-    font-size: 1rem;
-    margin-bottom: 6px;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-    .summary-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .person-expenses {
-        grid-template-columns: 1fr;
-    }
-
-    .category-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .category-stats {
-        width: 100%;
-    }
 }
