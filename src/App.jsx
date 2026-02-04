@@ -230,9 +230,11 @@ function App() {
                               {categories[tx.category]?.icon || '📦'}
                             </div>
                             <div className="transaction-details-compact">
-                              <div className="transaction-vendor-compact">{tx.vendor}</div>
-                              <div className="transaction-payer">Payé par {tx.payer}</div>
-                            </div>
+  <div className="transaction-vendor-compact">{tx.vendor}</div>
+  <div className="transaction-payer">
+    {formatDate(tx.date)} • Payé par {tx.payer}
+  </div>
+</div>
                             <div className={`transaction-amount-compact ${tx.type}`}>
                               {formatAmount(tx.amount, session.currency)}
                             </div>
@@ -293,7 +295,9 @@ function App() {
                             </div>
                             <div className="transaction-details-compact">
                               <div className="transaction-vendor-compact">{tx.vendor}</div>
-                              <div className="transaction-payer">Payé par {tx.payer}</div>
+                              <div className="transaction-payer">
+  {formatDate(tx.date)} • Payé par {tx.payer}
+</div>
                             </div>
                             <div className={`transaction-amount-compact ${tx.type}`}>
                               {formatAmount(tx.amount, session.currency)}
