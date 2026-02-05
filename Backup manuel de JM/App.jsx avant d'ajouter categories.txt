@@ -4,7 +4,6 @@ import { ref, onValue, push, set, remove } from 'firebase/database';
 import Setup from './components/Setup';
 import TransactionForm from './components/TransactionForm';
 import Summary from './components/Summary';
-import CategoriesModal from './components/CategoriesModal';
 import { DEFAULT_CATEGORIES } from './constants/categories';
 import { formatAmount, formatDate } from './utils/formatters';
 import './App.css';
@@ -19,8 +18,6 @@ function App() {
   const [currentUserName, setCurrentUserName] = useState('');
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
 
   // Vérifie si une session existe au démarrage
   useEffect(() => {
@@ -132,13 +129,6 @@ function App() {
     setActiveTab('add');
   };
 
-  // Sauvegarde les catégories
-  const handleSaveCategories = (newCategories) => {
-    const categoriesRef = ref(database, `sessions/${session.code}/categories`);
-    set(categoriesRef, newCategories);
-    setCategories(newCategories);
-  };
-
   // Navigation mensuelle
   const goToPreviousMonth = () => {
     setSelectedMonth(prevMonth => {
@@ -194,43 +184,6 @@ function App() {
         <h1>💰 BudgetDuo</h1>
         <p className="header-users">{session.userName} & {session.partnerName}</p>
         
-        <div className="header-settings">
-          <button 
-            className="header-settings-button"
-            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-            title="Options"
-          >
-            ⚙️
-          </button>
-          
-          {showOptionsMenu && (
-            <div className="options-menu">
-              <button
-                className="option-item"
-                onClick={() => {
-                  setShowCategoriesModal(true);
-                  setShowOptionsMenu(false);
-                }}
-              >
-                🏷️ Gérer les catégories
-              </button>
-              <button
-                className="option-item danger"
-                onClick={() => {
-                  if (confirm('Voulez-vous vraiment réinitialiser la configuration ?')) {
-                    localStorage.removeItem('budgetduo_session');
-                    setIsSetup(false);
-                    setSession(null);
-                  }
-                  setShowOptionsMenu(false);
-                }}
-              >
-                🔄 Réinitialiser
-              </button>
-            </div>
-          )}
-        </div>
-        
         {/* Sélecteur de mois */}
         <div className="header-month-selector">
           <button 
@@ -257,16 +210,21 @@ function App() {
             →
           </button>
         </div>
+        
+        <button 
+          onClick={() => {
+            if (confirm('Voulez-vous vraiment réinitialiser la configuration ?')) {
+              localStorage.removeItem('budgetduo_session');
+              setIsSetup(false);
+              setSession(null);
+            }
+          }}
+          className="header-settings-button"
+          title="Réinitialiser"
+        >
+          ⚙️
+        </button>
       </div>
-
-      {/* Modal Catégories */}
-      {showCategoriesModal && (
-        <CategoriesModal
-          categories={categories}
-          onSave={handleSaveCategories}
-          onClose={() => setShowCategoriesModal(false)}
-        />
-      )}
 
       {/* Navigation par onglets */}
       <div className="tabs-navigation">

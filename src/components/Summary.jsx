@@ -95,11 +95,7 @@ function Summary({ transactions, session, categories }) {
                 ) : (
                     <>
                         {/* Vue Partagée */}
-                        <div className="summary-item">
-                            <span className="summary-icon">🌱</span>
-                            <span className="summary-label">Dépenses personnelles</span>
-                            <span className="summary-value">0.00 $</span>
-                        </div>
+                        
                         <div className="summary-item">
                             <span className="summary-icon">👥</span>
                             <span className="summary-label">Dépenses partagées (ma part)</span>
