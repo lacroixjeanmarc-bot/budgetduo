@@ -21,6 +21,8 @@ function TransactionForm({
     const [customAmounts, setCustomAmounts] = useState(false);
     const [userCustomAmount, setUserCustomAmount] = useState('');
     const [partnerCustomAmount, setPartnerCustomAmount] = useState('');
+    const [receiptPhoto, setReceiptPhoto] = useState(null);
+    const [showPhotoOptions, setShowPhotoOptions] = useState(false);
 
     // Initialise la date à aujourd'hui
     useEffect(() => {
@@ -43,6 +45,11 @@ function TransactionForm({
             setBeneficiary(editingTransaction.beneficiary);
             setIsShared(editingTransaction.isShared || false);
             setIsPersonal(editingTransaction.isPersonal || false);
+            
+            // Charge la photo si elle existe
+            if (editingTransaction.receiptPhoto) {
+                setReceiptPhoto(editingTransaction.receiptPhoto);
+            }
             
             if (editingTransaction.userShare && editingTransaction.partnerShare) {
                 const totalAmount = editingTransaction.amount;
@@ -83,12 +90,30 @@ function TransactionForm({
         }
     }, [customAmounts, amount, userCustomAmount, partnerCustomAmount]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!amount || !vendor || !date) {
             alert('Veuillez remplir tous les champs obligatoires');
             return;
+        }
+
+        let photoBase64 = null;
+
+        // Convertir la photo en Base64 si présente
+        if (receiptPhoto && typeof receiptPhoto !== 'string') {
+            try {
+                photoBase64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(receiptPhoto);
+                });
+            } catch (error) {
+                console.error('Erreur conversion photo:', error);
+                alert('Erreur lors de la conversion de la photo');
+                return;
+            }
         }
 
         const transaction = {
@@ -101,7 +126,8 @@ function TransactionForm({
             payer,
             beneficiary,
             isShared: transactionType === 'expense' ? isShared : false,
-            isPersonal
+            isPersonal,
+            receiptPhoto: photoBase64 || (editingTransaction?.receiptPhoto || null)
         };
 
         // Calcul des parts si dépense partagée
@@ -130,6 +156,7 @@ function TransactionForm({
         setCustomAmounts(false);
         setUserCustomAmount('');
         setPartnerCustomAmount('');
+        setReceiptPhoto(null);
         
         if (onCancelEdit) {
             onCancelEdit();
@@ -181,21 +208,85 @@ function TransactionForm({
                     />
                 </div>
 
-                {/* Vendeur/Description */}
+                {/* Vendeur/Description avec bouton caméra */}
                 <div className="form-field">
                     <label>
                         {transactionType === 'expense' ? 'Vendeur' : 
                          transactionType === 'income' ? 'Source' : 'Description'}
                     </label>
-                    <input
-                        type="text"
-                        value={vendor}
-                        onChange={(e) => setVendor(e.target.value)}
-                        placeholder={transactionType === 'expense' ? 'Ex: Supermarché' : 
-                                   transactionType === 'income' ? 'Ex: Salaire' : 'Ex: Remboursement'}
-                        className="form-input"
-                        required
-                    />
+                    <div className="vendor-input-container">
+                        <input
+                            type="text"
+                            value={vendor}
+                            onChange={(e) => setVendor(e.target.value)}
+                            placeholder={transactionType === 'expense' ? 'Ex: Supermarché' : 
+                                       transactionType === 'income' ? 'Ex: Salaire' : 'Ex: Remboursement'}
+                            className="form-input vendor-input"
+                            required
+                        />
+                        <button
+                            type="button"
+                            className="btn-camera"
+                            onClick={() => setShowPhotoOptions(!showPhotoOptions)}
+                            title="Ajouter un reçu"
+                        >
+                            📷
+                        </button>
+                    </div>
+                    
+                    {/* Options photo */}
+                    {showPhotoOptions && (
+                        <div className="photo-options">
+                            <label className="photo-option-btn">
+                                📸 Prendre une photo
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setReceiptPhoto(e.target.files[0]);
+                                            setShowPhotoOptions(false);
+                                        }
+                                    }}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                            <label className="photo-option-btn">
+                                📁 Choisir un fichier
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setReceiptPhoto(e.target.files[0]);
+                                            setShowPhotoOptions(false);
+                                        }
+                                    }}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                        </div>
+                    )}
+                    
+                    {/* Aperçu de la photo */}
+                    {receiptPhoto && (
+                        <div className="photo-preview">
+                            <img 
+                                src={typeof receiptPhoto === 'string' ? receiptPhoto : URL.createObjectURL(receiptPhoto)} 
+                                alt="Reçu"
+                                className="receipt-thumbnail"
+                            />
+                            <button
+                                type="button"
+                                className="btn-remove-photo"
+                                onClick={() => setReceiptPhoto(null)}
+                                title="Supprimer"
+                            >
+                                ❌
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Catégorie */}
@@ -366,6 +457,7 @@ function TransactionForm({
                                 setCustomAmounts(false);
                                 setUserCustomAmount('');
                                 setPartnerCustomAmount('');
+                                setReceiptPhoto(null);
                                 if (onCancelEdit) {
                                     onCancelEdit();
                                 }

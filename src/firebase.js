@@ -1,6 +1,7 @@
 // ========== CONFIGURATION FIREBASE ==========
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
+import { getStorage } from 'firebase/storage';
 
 // Configuration Firebase - BudgetDuo
 const firebaseConfig = {

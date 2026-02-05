@@ -226,9 +226,33 @@ function App() {
                         <div className="transaction-date-header">{formatDate(date)}</div>
                         {txs.map(tx => (
                           <div key={tx.id} className="transaction-item-compact">
-                            <div className="transaction-icon-compact">
-                              {categories[tx.category]?.icon || '📦'}
-                            </div>
+    {tx.receiptPhoto ? (
+        <img 
+            src={tx.receiptPhoto} 
+            alt="Reçu"
+            className="transaction-receipt-thumb"
+            onClick={() => {
+                // Ouvrir la photo en grand
+                const modal = document.createElement('div');
+                modal.className = 'photo-modal';
+                modal.innerHTML = `
+                    <div class="photo-modal-overlay">
+                        <img src="${tx.receiptPhoto}" alt="Reçu" class="photo-modal-image" />
+                        <button class="photo-modal-close">✕</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.querySelector('.photo-modal-close').onclick = () => modal.remove();
+                modal.querySelector('.photo-modal-overlay').onclick = (e) => {
+                    if (e.target.className === 'photo-modal-overlay') modal.remove();
+                };
+            }}
+        />
+    ) : (
+        <div className="transaction-icon-compact">
+            {categories[tx.category]?.icon || '📦'}
+        </div>
+    )}
                             <div className="transaction-details-compact">
   <div className="transaction-vendor-compact">{tx.vendor}</div>
   <div className="transaction-payer">
