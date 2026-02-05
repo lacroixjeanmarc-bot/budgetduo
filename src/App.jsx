@@ -17,6 +17,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('add');
   const [currentUserName, setCurrentUserName] = useState('');
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   // Vérifie si une session existe au démarrage
   useEffect(() => {
@@ -128,19 +129,88 @@ function App() {
     setActiveTab('add');
   };
 
+  // Navigation mensuelle
+  const goToPreviousMonth = () => {
+    setSelectedMonth(prevMonth => {
+      const newDate = new Date(prevMonth);
+      newDate.setMonth(newDate.getMonth() - 1);
+      return newDate;
+    });
+  };
+
+  const goToNextMonth = () => {
+    setSelectedMonth(prevMonth => {
+      const newDate = new Date(prevMonth);
+      newDate.setMonth(newDate.getMonth() + 1);
+      return newDate;
+    });
+  };
+
+  const goToCurrentMonth = () => {
+    setSelectedMonth(new Date());
+  };
+
+  // Formatte le mois sélectionné
+  const formatSelectedMonth = () => {
+    const options = { year: 'numeric', month: 'long' };
+    return selectedMonth.toLocaleDateString('fr-CA', options);
+  };
+
+  // Filtre les transactions par mois
+  const filterTransactionsByMonth = (transactions) => {
+    return transactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate.getMonth() === selectedMonth.getMonth() && 
+             txDate.getFullYear() === selectedMonth.getFullYear();
+    });
+  };
+
   // Si pas encore configuré, affiche le Setup
   if (!isSetup) {
     return <Setup onComplete={handleSetupComplete} />;
   }
 
-  // Filtrer les transactions partagées
-  const sharedTransactions = transactions.filter(tx => !tx.isPersonal);
+  // Filtrer les transactions partagées par mois
+  const sharedTransactions = filterTransactionsByMonth(
+    transactions.filter(tx => !tx.isPersonal)
+  );
+
+  // Filtrer les transactions personnelles par mois
+  const filteredPersonalTransactions = filterTransactionsByMonth(personalTransactions);
 
   return (
     <div className="app-container">
       <div className="header">
         <h1>💰 BudgetDuo</h1>
         <p className="header-users">{session.userName} & {session.partnerName}</p>
+        
+        {/* Sélecteur de mois */}
+        <div className="header-month-selector">
+          <button 
+            className="header-month-btn"
+            onClick={goToPreviousMonth}
+            title="Mois précédent"
+          >
+            ←
+          </button>
+          <div className="header-month-display">
+            <span className="header-month-text">{formatSelectedMonth()}</span>
+            <button 
+              className="header-today-btn"
+              onClick={goToCurrentMonth}
+            >
+              Aujourd'hui
+            </button>
+          </div>
+          <button 
+            className="header-month-btn"
+            onClick={goToNextMonth}
+            title="Mois suivant"
+          >
+            →
+          </button>
+        </div>
+        
         <button 
           onClick={() => {
             if (confirm('Voulez-vous vraiment réinitialiser la configuration ?')) {
@@ -174,7 +244,7 @@ function App() {
           className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`}
           onClick={() => setActiveTab('personal')}
         >
-          👤 Personnel {personalTransactions.length > 0 && `(${personalTransactions.length})`}
+          👤 Personnel {filteredPersonalTransactions.length > 0 && `(${filteredPersonalTransactions.length})`}
         </button>
       </div>
 
@@ -204,7 +274,7 @@ function App() {
               <h2>📋 Transactions partagées</h2>
               {sharedTransactions.length === 0 ? (
                 <div className="empty-state">
-                  <p>Aucune transaction partagée.</p>
+                  <p>Aucune transaction pour ce mois.</p>
                 </div>
               ) : (
                 <div className="transactions-list">
@@ -226,39 +296,44 @@ function App() {
                         <div className="transaction-date-header">{formatDate(date)}</div>
                         {txs.map(tx => (
                           <div key={tx.id} className="transaction-item-compact">
-    {tx.receiptPhoto ? (
-        <img 
-            src={tx.receiptPhoto} 
-            alt="Reçu"
-            className="transaction-receipt-thumb"
-            onClick={() => {
-                // Ouvrir la photo en grand
-                const modal = document.createElement('div');
-                modal.className = 'photo-modal';
-                modal.innerHTML = `
-                    <div class="photo-modal-overlay">
-                        <img src="${tx.receiptPhoto}" alt="Reçu" class="photo-modal-image" />
-                        <button class="photo-modal-close">✕</button>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.querySelector('.photo-modal-close').onclick = () => modal.remove();
-                modal.querySelector('.photo-modal-overlay').onclick = (e) => {
-                    if (e.target.className === 'photo-modal-overlay') modal.remove();
-                };
-            }}
-        />
-    ) : (
-        <div className="transaction-icon-compact">
-            {categories[tx.category]?.icon || '📦'}
-        </div>
-    )}
+                            {tx.receiptPhoto ? (
+                              <img 
+                                src={tx.receiptPhoto} 
+                                alt="Reçu"
+                                className="transaction-receipt-thumb"
+                                onClick={() => {
+                                  const modal = document.createElement('div');
+                                  modal.className = 'photo-modal';
+                                  modal.innerHTML = `
+                                    <div class="photo-modal-overlay">
+                                      <img src="${tx.receiptPhoto}" alt="Reçu" class="photo-modal-image" />
+                                      <button class="photo-modal-close">✕</button>
+                                    </div>
+                                  `;
+                                  document.body.appendChild(modal);
+                                  
+                                  const img = modal.querySelector('.photo-modal-image');
+                                  const closeBtn = modal.querySelector('.photo-modal-close');
+                                  const overlay = modal.querySelector('.photo-modal-overlay');
+                                  
+                                  img.onclick = () => img.classList.toggle('zoomed');
+                                  closeBtn.onclick = () => modal.remove();
+                                  overlay.onclick = (e) => {
+                                    if (e.target === overlay) modal.remove();
+                                  };
+                                }}
+                              />
+                            ) : (
+                              <div className="transaction-icon-compact">
+                                {categories[tx.category]?.icon || '📦'}
+                              </div>
+                            )}
                             <div className="transaction-details-compact">
-  <div className="transaction-vendor-compact">{tx.vendor}</div>
-  <div className="transaction-payer">
-    {formatDate(tx.date)} • Payé par {tx.payer}
-  </div>
-</div>
+                              <div className="transaction-vendor-compact">{tx.vendor}</div>
+                              <div className="transaction-payer">
+                                {formatDate(tx.date)} • Payé par {tx.payer}
+                              </div>
+                            </div>
                             <div className={`transaction-amount-compact ${tx.type}`}>
                               {formatAmount(tx.amount, session.currency)}
                             </div>
@@ -284,22 +359,22 @@ function App() {
         {activeTab === 'personal' && (
           <>
             <Summary 
-              transactions={[...transactions, ...personalTransactions]}
+              transactions={[...transactions, ...filteredPersonalTransactions]}
               session={session}
               categories={categories}
             />
             
             <div className="transactions-section">
               <h2>👤 Transactions personnelles</h2>
-              {personalTransactions.length === 0 ? (
+              {filteredPersonalTransactions.length === 0 ? (
                 <div className="empty-state">
-                  <p>Aucune transaction personnelle.</p>
+                  <p>Aucune transaction personnelle pour ce mois.</p>
                 </div>
               ) : (
                 <div className="transactions-list">
                   {(() => {
                     const groupedByDate = {};
-                    personalTransactions
+                    filteredPersonalTransactions
                       .sort((a, b) => b.timestamp - a.timestamp)
                       .forEach(tx => {
                         const dateKey = tx.date;
@@ -314,14 +389,43 @@ function App() {
                         <div className="transaction-date-header">{formatDate(date)}</div>
                         {txs.map(tx => (
                           <div key={tx.id} className="transaction-item-compact">
-                            <div className="transaction-icon-compact">
-                              {categories[tx.category]?.icon || '📦'}
-                            </div>
+                            {tx.receiptPhoto ? (
+                              <img 
+                                src={tx.receiptPhoto} 
+                                alt="Reçu"
+                                className="transaction-receipt-thumb"
+                                onClick={() => {
+                                  const modal = document.createElement('div');
+                                  modal.className = 'photo-modal';
+                                  modal.innerHTML = `
+                                    <div class="photo-modal-overlay">
+                                      <img src="${tx.receiptPhoto}" alt="Reçu" class="photo-modal-image" />
+                                      <button class="photo-modal-close">✕</button>
+                                    </div>
+                                  `;
+                                  document.body.appendChild(modal);
+                                  
+                                  const img = modal.querySelector('.photo-modal-image');
+                                  const closeBtn = modal.querySelector('.photo-modal-close');
+                                  const overlay = modal.querySelector('.photo-modal-overlay');
+                                  
+                                  img.onclick = () => img.classList.toggle('zoomed');
+                                  closeBtn.onclick = () => modal.remove();
+                                  overlay.onclick = (e) => {
+                                    if (e.target === overlay) modal.remove();
+                                  };
+                                }}
+                              />
+                            ) : (
+                              <div className="transaction-icon-compact">
+                                {categories[tx.category]?.icon || '📦'}
+                              </div>
+                            )}
                             <div className="transaction-details-compact">
                               <div className="transaction-vendor-compact">{tx.vendor}</div>
                               <div className="transaction-payer">
-  {formatDate(tx.date)} • Payé par {tx.payer}
-</div>
+                                {formatDate(tx.date)} • Payé par {tx.payer}
+                              </div>
                             </div>
                             <div className={`transaction-amount-compact ${tx.type}`}>
                               {formatAmount(tx.amount, session.currency)}

@@ -1,21 +1,21 @@
 .transaction-form-container {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 12px;
+    padding: 24px;
     margin-bottom: 20px;
 }
 
 .transaction-form-container h2 {
-    font-size: 1.2rem;
-    margin-bottom: 16px;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
     color: var(--text-primary);
 }
 
 .transaction-form {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
 
 .form-type-selector {
@@ -26,10 +26,10 @@
 }
 
 .type-btn {
-    padding: 10px;
+    padding: 12px;
     background: var(--bg-card);
     border: 2px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-secondary);
     font-size: 0.95rem;
     font-weight: 500;
@@ -76,10 +76,10 @@
 
 .form-input,
 .form-select {
-    padding: 10px;
+    padding: 12px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-primary);
     font-size: 1rem;
     transition: all 0.2s;
@@ -99,10 +99,10 @@
 .form-checkbox {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 12px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .form-checkbox label {
@@ -139,7 +139,7 @@
 
 .form-buttons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-top: 8px;
 }
 
@@ -148,10 +148,10 @@
 }
 
 .btn-submit {
-    padding: 10px;
+    padding: 14px;
     background: var(--accent);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
     font-size: 1rem;
     font-weight: 600;
@@ -171,10 +171,10 @@
 
 .btn-cancel {
     flex: 1;
-    padding: 10px;
+    padding: 14px;
     background: transparent;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-secondary);
     font-size: 1rem;
     font-weight: 600;
@@ -207,7 +207,6 @@
         flex: 1;
     }
 }
-
 /* Container pour input vendeur + bouton caméra */
 .vendor-input-container {
     display: flex;
@@ -311,29 +310,6 @@
 
 /* Responsive */
 @media (max-width: 600px) {
-    .form-type-selector {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-    }
-    
-    .type-btn {
-        padding: 8px;
-        font-size: 0.85rem;
-    }
-    
-    .transaction-form-container {
-        padding: 16px;
-    }
-
-    .form-buttons {
-        flex-direction: column;
-    }
-
-    .form-buttons .btn-submit,
-    .form-buttons .btn-cancel {
-        flex: 1;
-    }
-    
     .photo-options {
         flex-direction: column;
     }
