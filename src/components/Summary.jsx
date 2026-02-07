@@ -1,8 +1,11 @@
+import { useTransactions } from '../context/TransactionContext';
 import { useMemo } from 'react';
 import { formatAmount } from '../utils/formatters';
 import './Summary.css';
 
-function Summary({ transactions, session, categories }) {
+function Summary({ session, categories }) {
+  const { transactions } = useTransactions();
+
     // Calcul des statistiques
     const stats = useMemo(() => {
         let totalExpenses = 0;

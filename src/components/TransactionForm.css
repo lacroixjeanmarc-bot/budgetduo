@@ -338,3 +338,36 @@
         flex-direction: column;
     }
 }
+.form-checkbox {
+  background: #2a2a2a;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.form-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.form-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.form-field {
+  margin-top: 12px;
+}
+
+.form-buttons {
+  margin-top: 18px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  font-weight: bold;
+  border-radius: 8px;
+}

@@ -1,497 +1,355 @@
-import { useState, useEffect } from 'react';
-import { database } from './firebase';
-import { ref, onValue, push, set, remove } from 'firebase/database';
-import Setup from './components/Setup';
-import TransactionForm from './components/TransactionForm';
-import Summary from './components/Summary';
-import CategoriesModal from './components/CategoriesModal';
-import { DEFAULT_CATEGORIES } from './constants/categories';
-import { formatAmount, formatDate } from './utils/formatters';
-import './App.css';
+import { useTransactions } from "./context/TransactionContext";
+import { useState, useEffect, useMemo } from "react";
+import { database } from "./firebase";
+import { ref, onValue, push, set } from "firebase/database";
+import Setup from "./components/Setup";
+import TransactionForm from "./components/TransactionForm";
+import Summary from "./components/Summary";
+import TransactionList from "./components/TransactionList";
+import ConfigCategories from "./components/ConfigCategories";
+
+import { DEFAULT_CATEGORIES } from "./constants/categories";
+
+
+import "./App.css";
 
 function App() {
   const [isSetup, setIsSetup] = useState(false);
   const [session, setSession] = useState(null);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+
   const [transactions, setTransactions] = useState([]);
   const [personalTransactions, setPersonalTransactions] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [activeTab, setActiveTab] = useState('add');
-  const [currentUserName, setCurrentUserName] = useState('');
-  const [editingTransaction, setEditingTransaction] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
 
-  // Vérifie si une session existe au démarrage
+
+  const [activeTab, setActiveTab] = useState("add");
+  const [currentUserName, setCurrentUserName] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+
+  const { setTransactions: setContextTransactions } = useTransactions();
+
+  // ---------- SESSION ----------
+
   useEffect(() => {
-    const savedSession = localStorage.getItem('budgetduo_session');
-    if (savedSession) {
-      try {
-        const sessionData = JSON.parse(savedSession);
-        setSession(sessionData);
-        setIsSetup(true);
-        setCurrentUserName(sessionData.userName);
-      } catch (error) {
-        console.error('Session invalide, nettoyage...', error);
-        localStorage.removeItem('budgetduo_session');
-        setIsSetup(false);
-      }
+    const saved = localStorage.getItem("budgetduo_session");
+    if (!saved) return;
+
+    try {
+      const data = JSON.parse(saved);
+      setSession(data);
+      setIsSetup(true);
+      setCurrentUserName(data.userName);
+    } catch {
+      localStorage.removeItem("budgetduo_session");
     }
   }, []);
 
-  // Charge les transactions partagées
-  useEffect(() => {
-    if (session?.code) {
-      const transactionsRef = ref(database, `sessions/${session.code}/transactions`);
-      
-      onValue(transactionsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const transactionsList = Object.entries(data).map(([id, trans]) => ({
-            id,
-            ...trans
-          }));
-          setTransactions(transactionsList);
-        } else {
-          setTransactions([]);
-        }
-      });
+  // ---------- FIREBASE SHARED ----------
 
-      // Charge les catégories
-      const categoriesRef = ref(database, `sessions/${session.code}/categories`);
-      onValue(categoriesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setCategories(data);
-        } else {
-          set(categoriesRef, DEFAULT_CATEGORIES);
-        }
-      });
-    }
+  useEffect(() => {
+    if (!session?.code) return;
+
+    const refPath = ref(database, `sessions/${session.code}/transactions`);
+
+    onValue(refPath, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return setTransactions([]);
+
+      const list = Object.entries(data).map(([id, tx]) => ({
+        id,
+        ...tx,
+      }));
+
+      setTransactions(list);
+    });
   }, [session]);
 
-  // Charge les transactions personnelles
+  // ---------- FIREBASE PERSONAL ----------
+
   useEffect(() => {
-    if (session?.code && currentUserName) {
-      const personalRef = ref(database, `sessions/${session.code}/personal/${currentUserName}/transactions`);
-      
-      onValue(personalRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const personalList = Object.entries(data).map(([id, trans]) => ({
-            id,
-            ...trans
-          }));
-          setPersonalTransactions(personalList);
-        } else {
-          setPersonalTransactions([]);
-        }
-      });
-    }
+    if (!session?.code || !currentUserName) return;
+
+    const refPath = ref(
+      database,
+      `sessions/${session.code}/personal/${currentUserName}/transactions`
+    );
+
+    onValue(refPath, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return setPersonalTransactions([]);
+
+      const list = Object.entries(data).map(([id, tx]) => ({
+        id,
+        ...tx,
+      }));
+
+      setPersonalTransactions(list);
+    });
   }, [session, currentUserName]);
 
-  // Callback quand le setup est complété
-  const handleSetupComplete = (sessionData) => {
-    setSession(sessionData);
+  const handleSetupComplete = (data) => {
+    setSession(data);
     setIsSetup(true);
-    setCurrentUserName(sessionData.userName);
+    setCurrentUserName(data.userName);
   };
 
-  // Ajoute ou modifie une transaction
-  const handleAddTransaction = (transaction) => {
-    if (transaction.id) {
-      // MODIFICATION d'une transaction existante
-      if (transaction.isPersonal) {
-        const transactionRef = ref(database, `sessions/${session.code}/personal/${currentUserName}/transactions/${transaction.id}`);
-        set(transactionRef, transaction);
-      } else {
-        const transactionRef = ref(database, `sessions/${session.code}/transactions/${transaction.id}`);
-        set(transactionRef, transaction);
-      }
-    } else {
-      // AJOUT d'une nouvelle transaction
-      if (transaction.isPersonal) {
-        const personalRef = ref(database, `sessions/${session.code}/personal/${currentUserName}/transactions`);
-        const newTransactionRef = push(personalRef);
-        set(newTransactionRef, transaction);
-      } else {
-        const transactionsRef = ref(database, `sessions/${session.code}/transactions`);
-        const newTransactionRef = push(transactionsRef);
-        set(newTransactionRef, transaction);
-      }
-    }
-    
-    // Réinitialise l'édition
-    setEditingTransaction(null);
-    setActiveTab(transaction.isPersonal ? 'personal' : 'list');
-  };
+// ---------- FIREBASE CATEGORIES ----------
 
-  // Commence l'édition d'une transaction
-  const handleEditTransaction = (transaction, isPersonal) => {
-    setEditingTransaction({ ...transaction, isPersonal });
-    setActiveTab('add');
-  };
+useEffect(() => {
+  if (!session?.code) return;
 
-  // Sauvegarde les catégories
-  const handleSaveCategories = (newCategories) => {
-    const categoriesRef = ref(database, `sessions/${session.code}/categories`);
-    set(categoriesRef, newCategories);
-    setCategories(newCategories);
-  };
-
-  // Navigation mensuelle
-  const goToPreviousMonth = () => {
-    setSelectedMonth(prevMonth => {
-      const newDate = new Date(prevMonth);
-      newDate.setMonth(newDate.getMonth() - 1);
-      return newDate;
-    });
-  };
-
-  const goToNextMonth = () => {
-    setSelectedMonth(prevMonth => {
-      const newDate = new Date(prevMonth);
-      newDate.setMonth(newDate.getMonth() + 1);
-      return newDate;
-    });
-  };
-
-  const goToCurrentMonth = () => {
-    setSelectedMonth(new Date());
-  };
-
-  // Formatte le mois sélectionné
-  const formatSelectedMonth = () => {
-    const options = { year: 'numeric', month: 'long' };
-    return selectedMonth.toLocaleDateString('fr-CA', options);
-  };
-
-  // Filtre les transactions par mois
-const filterTransactionsByMonth = (transactions) => {
-  return transactions.filter(tx => {
-    // Parse la date comme "YYYY-MM-DD" en local
-    const [year, month, day] = tx.date.split('-').map(Number);
-    const txDate = new Date(year, month - 1, day); // month - 1 car les mois commencent à 0
-    
-    return txDate.getMonth() === selectedMonth.getMonth() && 
-           txDate.getFullYear() === selectedMonth.getFullYear();
-  });
-};
-
-  // Si pas encore configuré, affiche le Setup
-  if (!isSetup) {
-    return <Setup onComplete={handleSetupComplete} />;
-  }
-
-  // Filtrer les transactions partagées par mois
-  const sharedTransactions = filterTransactionsByMonth(
-    transactions.filter(tx => !tx.isPersonal)
+  const catRef = ref(
+    database,
+    `sessions/${session.code}/categories`
   );
 
-  // Filtrer les transactions personnelles par mois
-  const filteredPersonalTransactions = filterTransactionsByMonth(personalTransactions);
+  onValue(catRef, (snapshot) => {
+    const data = snapshot.val();
+
+    if (data) {
+      setCategories(data);
+    } else {
+      // initialiser avec défaut
+      set(catRef, DEFAULT_CATEGORIES);
+    }
+  });
+}, [session]);
+
+
+  // ---------- NORMALISATION SAFE TX ----------
+
+  const normalizeTransaction = (tx, isPersonal) => ({
+    id: tx.id || "",
+    type: tx.type || "expense",
+    category: tx.category || "",
+    amount: Number(tx.amount) || 0,
+    date: tx.date || "",
+    payer: tx.payer || session?.userName || "",
+    isShared: !!tx.isShared,
+    isPersonal,
+    userShare: Number(tx.userShare) || 0,
+    partnerShare: Number(tx.partnerShare) || 0,
+    vendor: tx.vendor || "",
+  });
+
+  // ---------- ADD / EDIT ----------
+
+  const handleAddTransaction = (tx) => {
+    if (!session) return;
+
+    const base = tx.isPersonal
+      ? `sessions/${session.code}/personal/${currentUserName}/transactions`
+      : `sessions/${session.code}/transactions`;
+
+    if (tx.id) {
+      set(ref(database, `${base}/${tx.id}`), tx);
+    } else {
+      const newRef = push(ref(database, base));
+      set(newRef, tx);
+    }
+
+    setEditingTransaction(null);
+    setActiveTab(tx.isPersonal ? "personal" : "list");
+  };
+
+  // ---------- FILTER MONTH ----------
+
+  const filterByMonth = (list) =>
+    list.filter((tx) => {
+      if (!tx.date) return false;
+
+      const [y, m, d] = tx.date.split("-").map(Number);
+      const date = new Date(y, m - 1, d);
+
+      return (
+        date.getMonth() === selectedMonth.getMonth() &&
+        date.getFullYear() === selectedMonth.getFullYear()
+      );
+    });
+
+  const shared = useMemo(() => {
+    return filterByMonth(
+      transactions.filter((tx) => !tx.isPersonal)
+    );
+  }, [transactions, selectedMonth]);
+  console.log("shared:", shared);
+
+  const personal = useMemo(() => {
+    return filterByMonth(personalTransactions);
+  }, [personalTransactions, selectedMonth]);
+
+  // ---------- BALANCE ----------
+
+  const diff = useMemo(() => {
+    if (!session) return 0;
+
+    let balance = 0;
+
+    shared.forEach((tx) => {
+      if (tx.type !== "expense" || !tx.isShared) return;
+
+      if (tx.payer === session.userName) {
+        balance += tx.partnerShare || 0;
+      } else {
+        balance -= tx.userShare || 0;
+      }
+    });
+
+    return balance;
+  }, [shared, session]);
+
+  // ---------- SYNC CONTEXT ----------
+
+  useEffect(() => {
+    const data =
+      activeTab === "personal"
+        ? [...shared, ...personal]
+        : shared;
+
+    setContextTransactions(data);
+  }, [activeTab, shared, personal, setContextTransactions]);
+
+  if (!isSetup) return <Setup onComplete={handleSetupComplete} />;
+
+  // ---------- UI ----------
 
   return (
     <div className="app-container">
       <div className="header">
         <h1>💰 BudgetDuo</h1>
-        <p className="header-users">{session.userName} & {session.partnerName}</p>
-        
-        <div className="header-settings">
-          <button 
-            className="header-settings-button"
-            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-            title="Options"
-          >
-            ⚙️
-          </button>
-          
-          {showOptionsMenu && (
-            <div className="options-menu">
-              <button
-                className="option-item"
-                onClick={() => {
-                  setShowCategoriesModal(true);
-                  setShowOptionsMenu(false);
-                }}
-              >
-                🏷️ Gérer les catégories
-              </button>
-              <button
-                className="option-item danger"
-                onClick={() => {
-                  if (confirm('Voulez-vous vraiment réinitialiser la configuration ?')) {
-                    localStorage.removeItem('budgetduo_session');
-                    setIsSetup(false);
-                    setSession(null);
-                  }
-                  setShowOptionsMenu(false);
-                }}
-              >
-                🔄 Réinitialiser
-              </button>
-            </div>
-          )}
-        </div>
-        
-        {/* Sélecteur de mois */}
+        <button
+  onClick={() => setActiveTab("config")}
+  className="config-btn"
+>
+  ⚙️
+</button>
+
+
+        <p className="header-users">
+          {session.userName} & {session.partnerName}
+        </p>
+
         <div className="header-month-selector">
-          <button 
+          <button
             className="header-month-btn"
-            onClick={goToPreviousMonth}
-            title="Mois précédent"
+            onClick={() =>
+              setSelectedMonth((d) => {
+                const x = new Date(d);
+                x.setMonth(x.getMonth() - 1);
+                return x;
+              })
+            }
           >
             ←
           </button>
+
           <div className="header-month-display">
-            <span className="header-month-text">{formatSelectedMonth()}</span>
-            <button 
+            <span className="header-month-text">
+              {selectedMonth.toLocaleDateString("fr-CA", {
+                year: "numeric",
+                month: "long",
+              })}
+            </span>
+
+            <button
               className="header-today-btn"
-              onClick={goToCurrentMonth}
+              onClick={() => setSelectedMonth(new Date())}
             >
               Aujourd'hui
             </button>
           </div>
-          <button 
+
+          <button
             className="header-month-btn"
-            onClick={goToNextMonth}
-            title="Mois suivant"
+            onClick={() =>
+              setSelectedMonth((d) => {
+                const x = new Date(d);
+                x.setMonth(x.getMonth() + 1);
+                return x;
+              })
+            }
           >
             →
           </button>
         </div>
+
+        <div className="balance-indicator">
+          {Math.abs(diff) < 0.01
+            ? "Équilibré"
+            : diff > 0
+            ? `${session.partnerName} doit ${diff.toFixed(2)}$ à ${session.userName}`
+            : `${session.userName} doit ${Math.abs(diff).toFixed(2)}$ à ${session.partnerName}`}
+        </div>
       </div>
 
-      {/* Modal Catégories */}
-      {showCategoriesModal && (
-        <CategoriesModal
-          categories={categories}
-          onSave={handleSaveCategories}
-          onClose={() => setShowCategoriesModal(false)}
-        />
-      )}
+ <div className="tabs-navigation">
+  <button onClick={() => setActiveTab("add")}>➕ Ajouter</button>
+  <button onClick={() => setActiveTab("list")}>📋 Liste</button>
+  <button onClick={() => setActiveTab("personal")}>👤 Personnel</button>
+</div>
 
-      {/* Navigation par onglets */}
-      <div className="tabs-navigation">
-        <button
-          className={`tab-btn ${activeTab === 'add' ? 'active' : ''}`}
-          onClick={() => setActiveTab('add')}
-        >
-          ➕ Ajouter
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'list' ? 'active' : ''}`}
-          onClick={() => setActiveTab('list')}
-        >
-          📋 Liste {sharedTransactions.length > 0 && `(${sharedTransactions.length})`}
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`}
-          onClick={() => setActiveTab('personal')}
-        >
-          👤 Personnel {filteredPersonalTransactions.length > 0 && `(${filteredPersonalTransactions.length})`}
-        </button>
-      </div>
 
-      {/* Contenu selon l'onglet actif */}
-      <div className="tab-content">
-        {/* Onglet Ajouter */}
-        {activeTab === 'add' && (
-          <TransactionForm 
-            session={session}
-            categories={categories}
-            onSubmit={handleAddTransaction}
-            editingTransaction={editingTransaction}
-            onCancelEdit={() => setEditingTransaction(null)}
-          />
-        )}
+<div className="tab-content">
 
-        {/* Onglet Liste (transactions partagées) */}
-        {activeTab === 'list' && (
-          <>
-            <Summary 
-              transactions={sharedTransactions}
-              session={session}
-              categories={categories}
-            />
-            
-            <div className="transactions-section">
-              <h2>📋 Transactions partagées</h2>
-              {sharedTransactions.length === 0 ? (
-                <div className="empty-state">
-                  <p>Aucune transaction pour ce mois.</p>
-                </div>
-              ) : (
-                <div className="transactions-list">
-                  {(() => {
-                    // Grouper les transactions par date
-                    const groupedByDate = {};
-                    sharedTransactions
-                      .sort((a, b) => b.timestamp - a.timestamp)
-                      .forEach(tx => {
-                        const dateKey = tx.date;
-                        if (!groupedByDate[dateKey]) {
-                          groupedByDate[dateKey] = [];
-                        }
-                        groupedByDate[dateKey].push(tx);
-                      });
+  {activeTab === "config" && (
+  <ConfigCategories
+    session={session}
+    categories={categories}
+  />
+)}
 
-                    return Object.entries(groupedByDate).map(([date, txs]) => (
-                      <div key={date} className="transaction-date-group">
-                        <div className="transaction-date-header">{formatDate(date)}</div>
-                        {txs.map(tx => (
-                          <div key={tx.id} className="transaction-item-compact">
-                            {tx.receiptPhoto ? (
-                              <img 
-                                src={tx.receiptPhoto} 
-                                alt="Reçu"
-                                className="transaction-receipt-thumb"
-                                onClick={() => {
-                                  const modal = document.createElement('div');
-                                  modal.className = 'photo-modal';
-                                  modal.innerHTML = `
-                                    <div class="photo-modal-overlay">
-                                      <img src="${tx.receiptPhoto}" alt="Reçu" class="photo-modal-image" />
-                                      <button class="photo-modal-close">✕</button>
-                                    </div>
-                                  `;
-                                  document.body.appendChild(modal);
-                                  
-                                  const img = modal.querySelector('.photo-modal-image');
-                                  const closeBtn = modal.querySelector('.photo-modal-close');
-                                  const overlay = modal.querySelector('.photo-modal-overlay');
-                                  
-                                  img.onclick = () => img.classList.toggle('zoomed');
-                                  closeBtn.onclick = () => modal.remove();
-                                  overlay.onclick = (e) => {
-                                    if (e.target === overlay) modal.remove();
-                                  };
-                                }}
-                              />
-                            ) : (
-                              <div className="transaction-icon-compact">
-                                {categories[tx.category]?.icon || '📦'}
-                              </div>
-                            )}
-                            <div className="transaction-details-compact">
-                              <div className="transaction-vendor-compact">{tx.vendor}</div>
-                              <div className="transaction-payer">
-                                {formatDate(tx.date)} • Payé par {tx.payer}
-                              </div>
-                            </div>
-                            <div className={`transaction-amount-compact ${tx.type}`}>
-                              {formatAmount(tx.amount, session.currency)}
-                            </div>
-                            <button
-                              className="btn-edit-compact"
-                              onClick={() => handleEditTransaction(tx, false)}
-                              title="Modifier"
-                            >
-                              ✏️
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ));
-                  })()}
-                </div>
-              )}
-            </div>
-          </>
-        )}
 
-        {/* Onglet Personnel */}
-        {activeTab === 'personal' && (
-          <>
-         <Summary 
-  transactions={[...sharedTransactions, ...filteredPersonalTransactions]}
+  {activeTab === "add" && (
+    <TransactionForm
+      session={session}
+      categories={categories}
+      onSubmit={handleAddTransaction}
+      editingTransaction={editingTransaction}
+      onCancelEdit={() => setEditingTransaction(null)}
+    />
+  )}
+
+
+        {activeTab === "list" && (
+<>
+
+
+
+<TransactionList
+  transactions={shared}
   session={session}
   categories={categories}
+  onEdit={(tx) => {
+    setEditingTransaction(
+      normalizeTransaction(tx, false)
+    );
+    setActiveTab("add");
+  }}
 />
-            
-            <div className="transactions-section">
-              <h2>👤 Transactions personnelles</h2>
-              {filteredPersonalTransactions.length === 0 ? (
-                <div className="empty-state">
-                  <p>Aucune transaction personnelle pour ce mois.</p>
-                </div>
-              ) : (
-                <div className="transactions-list">
-                  {(() => {
-                    const groupedByDate = {};
-                    filteredPersonalTransactions
-                      .sort((a, b) => b.timestamp - a.timestamp)
-                      .forEach(tx => {
-                        const dateKey = tx.date;
-                        if (!groupedByDate[dateKey]) {
-                          groupedByDate[dateKey] = [];
-                        }
-                        groupedByDate[dateKey].push(tx);
-                      });
 
-                    return Object.entries(groupedByDate).map(([date, txs]) => (
-                      <div key={date} className="transaction-date-group">
-                        <div className="transaction-date-header">{formatDate(date)}</div>
-                        {txs.map(tx => (
-                          <div key={tx.id} className="transaction-item-compact">
-                            {tx.receiptPhoto ? (
-                              <img 
-                                src={tx.receiptPhoto} 
-                                alt="Reçu"
-                                className="transaction-receipt-thumb"
-                                onClick={() => {
-                                  const modal = document.createElement('div');
-                                  modal.className = 'photo-modal';
-                                  modal.innerHTML = `
-                                    <div class="photo-modal-overlay">
-                                      <img src="${tx.receiptPhoto}" alt="Reçu" class="photo-modal-image" />
-                                      <button class="photo-modal-close">✕</button>
-                                    </div>
-                                  `;
-                                  document.body.appendChild(modal);
-                                  
-                                  const img = modal.querySelector('.photo-modal-image');
-                                  const closeBtn = modal.querySelector('.photo-modal-close');
-                                  const overlay = modal.querySelector('.photo-modal-overlay');
-                                  
-                                  img.onclick = () => img.classList.toggle('zoomed');
-                                  closeBtn.onclick = () => modal.remove();
-                                  overlay.onclick = (e) => {
-                                    if (e.target === overlay) modal.remove();
-                                  };
-                                }}
-                              />
-                            ) : (
-                              <div className="transaction-icon-compact">
-                                {categories[tx.category]?.icon || '📦'}
-                              </div>
-                            )}
-                            <div className="transaction-details-compact">
-                              <div className="transaction-vendor-compact">{tx.vendor}</div>
-                              <div className="transaction-payer">
-                                {formatDate(tx.date)} • Payé par {tx.payer}
-                              </div>
-                            </div>
-                            <div className={`transaction-amount-compact ${tx.type}`}>
-                              {formatAmount(tx.amount, session.currency)}
-                            </div>
-                            <button
-                              className="btn-edit-compact"
-                              onClick={() => handleEditTransaction(tx, true)}
-                              title="Modifier"
-                            >
-                              ✏️
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ));
-                  })()}
-                </div>
-              )}
-            </div>
-          </>
-        )}
+</>
+)}
+
+        {activeTab === "personal" && (
+<>
+
+
+
+<TransactionList
+  transactions={personal}
+  session={session}
+  categories={categories}
+  onEdit={(tx) => {
+    setEditingTransaction(
+      normalizeTransaction(tx, true)
+    );
+    setActiveTab("add");
+  }}
+/>
+
+</>
+)}
       </div>
     </div>
   );

@@ -1,0 +1,117 @@
+.transactions-list {
+display: flex;
+flex-direction: column;
+gap: 5px;
+margin-top: 6px;
+}
+
+/* ===== ITEM ===== */
+
+.transactions-list .transaction-item-compact {
+display: flex;
+align-items: center;
+gap: 7px;
+padding: 5px 8px;
+border-radius: 7px;
+background: #1e1e1e;
+font-size: 13px;
+min-height: 42px;
+}
+
+/* ===== PHOTO / ICÔNE ===== */
+
+.transactions-list .transaction-receipt-thumb {
+width: 30px;
+height: 30px;
+object-fit: cover;
+border-radius: 6px;
+cursor: pointer;
+}
+
+.transactions-list .transaction-icon-compact {
+font-size: 18px;
+width: 26px;
+text-align: center;
+}
+
+/* ===== TEXTE ===== */
+
+.transactions-list .transaction-details-compact {
+flex: 1;
+display: flex;
+flex-direction: column;
+justify-content: center;
+line-height: 1.2;
+}
+
+.transactions-list .transaction-details-compact div:first-child {
+font-size: 13px;
+font-weight: 500;
+}
+
+.transactions-list .transaction-details-compact div:last-child {
+font-size: 11px;
+opacity: 0.7;
+}
+
+/* ===== MONTANT ===== */
+
+.transactions-list .transaction-amount-compact {
+font-weight: bold;
+margin-right: 8px;
+font-size: 13px;
+min-width: 80px;
+text-align: right;
+}
+
+.transaction-amount-compact.expense {
+color: #ff6b6b;
+}
+
+.transaction-amount-compact.income {
+color: #51cf66;
+}
+
+/* ===== BOUTON ÉDITION ===== */
+
+.transactions-list .transaction-item-compact button {
+font-size: 14px;
+padding: 2px 6px;
+background: none;
+border: none;
+cursor: pointer;
+opacity: 0.6;
+}
+
+.transactions-list .transaction-item-compact button:hover {
+opacity: 1;
+}
+
+/* ===== PHOTO MODAL ===== */
+
+.photo-modal {
+position: fixed;
+inset: 0;
+background: rgba(0, 0, 0, 0.85);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 9999;
+}
+
+.photo-modal-image {
+max-width: 90%;
+max-height: 90%;
+border-radius: 10px;
+}
+
+.photo-modal-close {
+position: absolute;
+top: 20px;
+right: 20px;
+font-size: 24px;
+background: none;
+border: none;
+color: white;
+cursor: pointer;
+}

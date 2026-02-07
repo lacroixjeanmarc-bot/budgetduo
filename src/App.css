@@ -261,15 +261,33 @@ body {
 }
 
 /* Navigation par onglets - COMPACT */
+/* Navigation onglets compacte */
+
 .tabs-navigation {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
-  background: var(--bg-secondary);
-  padding: 6px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0;
 }
+
+.tabs-navigation button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tabs-navigation button:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
 
 .tab-btn {
   flex: 1;
@@ -509,20 +527,45 @@ body {
 }
 
 .header-month-btn {
-    width: 36px;
-    height: 36px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
+    width: 40px;
+    height: 40px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+
+    padding: 0;
+    line-height: 1;
+
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+
+    font-size: 22px;
+    font-weight: normal;
+
+    color: var(--text-secondary);
+
+    cursor: pointer;
+    transition: all 0.2s;
 }
+
+
+.month-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.balance-indicator {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #22c55e;
+  font-weight: 500;
+  text-align: center;
+}
+
+
 
 .header-month-btn:hover {
     background: var(--accent);
@@ -532,11 +575,12 @@ body {
 }
 
 .header-month-display {
-    flex: 1;
+    min-width: 160px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    margin: 0 12px;
 }
 
 .header-month-text {
@@ -565,9 +609,9 @@ body {
 
 @media (max-width: 600px) {
     .header-month-selector {
-        max-width: 100%;
-        padding: 10px;
-        gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between
     }
     
     .header-month-text {
@@ -694,4 +738,32 @@ body {
   .sort-select {
     flex: 1;
   }
+}
+
+.config-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+
+  background: #000;
+  color: white;
+
+  border: none;
+  border-radius: 6px;
+
+  cursor: pointer;
+  z-index: 10;
+}
+
+.config-btn:hover {
+  background: #333;
 }

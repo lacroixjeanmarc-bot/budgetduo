@@ -1,475 +1,488 @@
-import { useState, useEffect } from 'react';
-import { DEFAULT_CATEGORIES } from '../constants/categories';
-import './TransactionForm.css';
+import { useState, useEffect } from "react";
+import { DEFAULT_CATEGORIES } from "../constants/categories";
+import "./TransactionForm.css";
 
-function TransactionForm({ 
-    session, 
-    categories = DEFAULT_CATEGORIES,
-    onSubmit,
-    editingTransaction = null,
-    onCancelEdit = null
+function TransactionForm({
+  session,
+  categories = DEFAULT_CATEGORIES,
+  onSubmit,
+  editingTransaction = null,
+  onCancelEdit = null,
 }) {
-    const [transactionType, setTransactionType] = useState('expense');
-    const [amount, setAmount] = useState('');
-    const [vendor, setVendor] = useState('');
-    const [category, setCategory] = useState('groceries');
-    const [date, setDate] = useState('');
-    const [payer, setPayer] = useState(session.userName);
-    const [beneficiary, setBeneficiary] = useState(session.userName);
-    const [isShared, setIsShared] = useState(true);
-    const [isPersonal, setIsPersonal] = useState(false);
-    const [customAmounts, setCustomAmounts] = useState(false);
-    const [userCustomAmount, setUserCustomAmount] = useState('');
-    const [partnerCustomAmount, setPartnerCustomAmount] = useState('');
-    const [receiptPhoto, setReceiptPhoto] = useState(null);
-    const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [transactionType, setTransactionType] = useState("expense");
+  const [amount, setAmount] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [category, setCategory] = useState("groceries");
+  const [date, setDate] = useState("");
+  const [payer, setPayer] = useState(session.userName);
+  const [beneficiary, setBeneficiary] = useState(session.userName);
 
-    // Initialise la date à aujourd'hui
-    useEffect(() => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        setDate(`${year}-${month}-${day}`);
-    }, []);
+  const [isShared, setIsShared] = useState(true);
+  const [isPersonal, setIsPersonal] = useState(false);
 
-    // Charge la transaction à éditer
-    useEffect(() => {
-        if (editingTransaction) {
-            setTransactionType(editingTransaction.type);
-            setAmount(editingTransaction.amount.toString());
-            setVendor(editingTransaction.vendor);
-            setCategory(editingTransaction.category);
-            setDate(editingTransaction.date);
-            setPayer(editingTransaction.payer);
-            setBeneficiary(editingTransaction.beneficiary);
-            setIsShared(editingTransaction.isShared || false);
-            setIsPersonal(editingTransaction.isPersonal || false);
-            
-            // Charge la photo si elle existe
-            if (editingTransaction.receiptPhoto) {
-                setReceiptPhoto(editingTransaction.receiptPhoto);
-            }
-            
-            if (editingTransaction.userShare && editingTransaction.partnerShare) {
-                const totalAmount = editingTransaction.amount;
-                const half = totalAmount / 2;
-                if (Math.abs(editingTransaction.userShare - half) > 0.01) {
-                    setCustomAmounts(true);
-                    setUserCustomAmount(editingTransaction.userShare.toString());
-                    setPartnerCustomAmount(editingTransaction.partnerShare.toString());
-                }
-            }
-        }
-    }, [editingTransaction]);
+  const [customAmounts, setCustomAmounts] = useState(false);
+  const [userCustomAmount, setUserCustomAmount] = useState("");
+  const [partnerCustomAmount, setPartnerCustomAmount] = useState("");
 
-    // Ajuste le bénéficiaire pour les transferts
-    useEffect(() => {
-        if (transactionType === 'transfer') {
-            setBeneficiary(payer === session.userName ? session.partnerName : session.userName);
-        }
-    }, [transactionType, payer, session.userName, session.partnerName]);
+  const [receiptPhoto, setReceiptPhoto] = useState(null);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
 
-    // Calcul automatique des montants personnalisés
-    useEffect(() => {
-        if (customAmounts && amount) {
-            const totalAmount = parseFloat(amount);
-            if (!isNaN(totalAmount)) {
-                if (userCustomAmount && userCustomAmount !== '') {
-                    const userAmt = parseFloat(userCustomAmount);
-                    if (!isNaN(userAmt)) {
-                        setPartnerCustomAmount((totalAmount - userAmt).toFixed(2));
-                    }
-                } else if (partnerCustomAmount && partnerCustomAmount !== '') {
-                    const partnerAmt = parseFloat(partnerCustomAmount);
-                    if (!isNaN(partnerAmt)) {
-                        setUserCustomAmount((totalAmount - partnerAmt).toFixed(2));
-                    }
-                }
-            }
-        }
-    }, [customAmounts, amount, userCustomAmount, partnerCustomAmount]);
+  // Date par défaut
+  useEffect(() => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    setDate(`${y}-${m}-${d}`);
+  }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  // Charger transaction en édition
+  useEffect(() => {
+    if (!editingTransaction) return;
 
-        if (!amount || !vendor || !date) {
-            alert('Veuillez remplir tous les champs obligatoires');
-            return;
-        }
+    setTransactionType(editingTransaction.type || "expense");
+    setAmount(
+      editingTransaction.amount != null
+        ? String(editingTransaction.amount)
+        : ""
+    );
+    setVendor(editingTransaction.vendor || "");
+    setCategory(editingTransaction.category || "groceries");
+    setDate(editingTransaction.date || "");
+    setPayer(editingTransaction.payer || session.userName);
+    setBeneficiary(
+      editingTransaction.beneficiary || session.userName
+    );
 
-        let photoBase64 = null;
+    const personal = editingTransaction.isPersonal === true;
+    setIsPersonal(personal);
+    setIsShared(
+      personal
+        ? false
+        : editingTransaction.isShared === true
+    );
 
-        // Convertir la photo en Base64 si présente
-        if (receiptPhoto && typeof receiptPhoto !== 'string') {
-            try {
-                photoBase64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(receiptPhoto);
-                });
-            } catch (error) {
-                console.error('Erreur conversion photo:', error);
-                alert('Erreur lors de la conversion de la photo');
-                return;
-            }
-        }
+    setReceiptPhoto(
+      editingTransaction.receiptPhoto || null
+    );
 
-        const transaction = {
-            type: transactionType,
-            amount: parseFloat(amount),
-            vendor: vendor.trim(),
-            category,
-            date,
-            timestamp: editingTransaction ? editingTransaction.timestamp : Date.now(),
-            payer,
-            beneficiary,
-            isShared: transactionType === 'expense' ? isShared : false,
-            isPersonal,
-            receiptPhoto: photoBase64 || (editingTransaction?.receiptPhoto || null)
-        };
+    if (
+      editingTransaction.userShare != null &&
+      editingTransaction.partnerShare != null
+    ) {
+      const total = editingTransaction.amount || 0;
+      const half = total / 2;
 
-        // Calcul des parts si dépense partagée
-        if (transactionType === 'expense' && isShared) {
-            const totalAmount = parseFloat(amount);
-            if (customAmounts) {
-                transaction.userShare = parseFloat(userCustomAmount) || 0;
-                transaction.partnerShare = parseFloat(partnerCustomAmount) || 0;
-            } else {
-                transaction.userShare = totalAmount / 2;
-                transaction.partnerShare = totalAmount / 2;
-            }
-        }
-
-        // Si on édite, on ajoute l'ID
-        if (editingTransaction) {
-            transaction.id = editingTransaction.id;
-        }
-
-        onSubmit(transaction);
-
-        // Reset du formulaire
-        setAmount('');
-        setVendor('');
-        setCategory('groceries');
+      if (
+        Math.abs(
+          editingTransaction.userShare - half
+        ) > 0.01
+      ) {
+        setCustomAmounts(true);
+        setUserCustomAmount(
+          String(editingTransaction.userShare)
+        );
+        setPartnerCustomAmount(
+          String(editingTransaction.partnerShare)
+        );
+      } else {
         setCustomAmounts(false);
-        setUserCustomAmount('');
-        setPartnerCustomAmount('');
-        setReceiptPhoto(null);
-        
-        if (onCancelEdit) {
-            onCancelEdit();
+      }
+    }
+  }, [editingTransaction, session.userName]);
+
+  // Ajuster bénéficiaire pour transfert
+  useEffect(() => {
+    if (transactionType !== "transfer") return;
+
+    setBeneficiary(
+      payer === session.userName
+        ? session.partnerName
+        : session.userName
+    );
+  }, [
+    transactionType,
+    payer,
+    session.userName,
+    session.partnerName,
+  ]);
+
+  // Split personnalisé (corrigé pour éviter boucle infinie)
+  useEffect(() => {
+    if (!customAmounts || !amount) return;
+
+    const total = parseFloat(amount);
+    if (isNaN(total)) return;
+
+    if (userCustomAmount !== "") {
+      const u = parseFloat(userCustomAmount);
+      if (!isNaN(u)) {
+        const newPartner = (total - u).toFixed(2);
+
+        if (newPartner !== partnerCustomAmount) {
+          setPartnerCustomAmount(newPartner);
         }
+      }
+    } else if (partnerCustomAmount !== "") {
+      const p = parseFloat(partnerCustomAmount);
+      if (!isNaN(p)) {
+        const newUser = (total - p).toFixed(2);
+
+        if (newUser !== userCustomAmount) {
+          setUserCustomAmount(newUser);
+        }
+      }
+    }
+  }, [
+    customAmounts,
+    amount,
+    userCustomAmount,
+    partnerCustomAmount,
+  ]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!amount || !vendor || !date) {
+      alert(
+        "Veuillez remplir tous les champs obligatoires"
+      );
+      return;
+    }
+
+    let photoBase64 = null;
+
+    if (
+      receiptPhoto &&
+      typeof receiptPhoto !== "string"
+    ) {
+      photoBase64 = await new Promise(
+        (resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () =>
+            resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(receiptPhoto);
+        }
+      );
+    }
+
+    const tx = {
+      type: transactionType,
+      amount: parseFloat(amount),
+      vendor: vendor.trim(),
+      category,
+      date,
+      timestamp: editingTransaction
+        ? editingTransaction.timestamp
+        : Date.now(),
+      payer,
+      beneficiary,
+      isShared:
+        transactionType === "expense"
+          ? isShared
+          : false,
+      isPersonal,
+      receiptPhoto:
+        photoBase64 ||
+        editingTransaction?.receiptPhoto ||
+        null,
     };
 
-    return (
-        <div className="transaction-form-container">
-            <h2>{editingTransaction ? '✏️ Modifier la transaction' : '➕ Nouvelle transaction'}</h2>
-            
-            <form onSubmit={handleSubmit} className="transaction-form">
-                {/* Type de transaction */}
-                <div className="form-type-selector">
-                    <button
-                        type="button"
-                        className={`type-btn ${transactionType === 'expense' ? 'active expense' : ''}`}
-                        onClick={() => setTransactionType('expense')}
-                    >
-                        💸 Dépense
-                    </button>
-                    <button
-                        type="button"
-                        className={`type-btn ${transactionType === 'income' ? 'active income' : ''}`}
-                        onClick={() => setTransactionType('income')}
-                    >
-                        💰 Revenu
-                    </button>
-                    <button
-                        type="button"
-                        className={`type-btn ${transactionType === 'transfer' ? 'active transfer' : ''}`}
-                        onClick={() => setTransactionType('transfer')}
-                    >
-                        🔄 Transfert
-                    </button>
-                </div>
+    if (
+      transactionType === "expense" &&
+      isShared
+    ) {
+      const total = parseFloat(amount);
 
-                {/* Montant */}
-                <div className="form-field">
-                    <label>Montant ({session.currency})</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        placeholder="0.00"
-                        className="form-input"
-                        required
-                    />
-                </div>
+      if (customAmounts) {
+        tx.userShare =
+          parseFloat(userCustomAmount) || 0;
+        tx.partnerShare =
+          parseFloat(partnerCustomAmount) || 0;
+      } else {
+        tx.userShare = total / 2;
+        tx.partnerShare = total / 2;
+      }
+    }
 
-                {/* Vendeur/Description avec bouton caméra */}
-                <div className="form-field">
-                    <label>
-                        {transactionType === 'expense' ? 'Vendeur' : 
-                         transactionType === 'income' ? 'Source' : 'Description'}
-                    </label>
-                    <div className="vendor-input-container">
-                        <input
-                            type="text"
-                            value={vendor}
-                            onChange={(e) => setVendor(e.target.value)}
-                            placeholder={transactionType === 'expense' ? 'Ex: Supermarché' : 
-                                       transactionType === 'income' ? 'Ex: Salaire' : 'Ex: Remboursement'}
-                            className="form-input vendor-input"
-                            required
-                        />
-                        <button
-                            type="button"
-                            className="btn-camera"
-                            onClick={() => setShowPhotoOptions(!showPhotoOptions)}
-                            title="Ajouter un reçu"
-                        >
-                            📷
-                        </button>
-                    </div>
-                    
-                    {/* Options photo */}
-                    {showPhotoOptions && (
-                        <div className="photo-options">
-                            <label className="photo-option-btn">
-                                📸 Prendre une photo
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    capture="environment"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setReceiptPhoto(e.target.files[0]);
-                                            setShowPhotoOptions(false);
-                                        }
-                                    }}
-                                    style={{ display: 'none' }}
-                                />
-                            </label>
-                            <label className="photo-option-btn">
-                                📁 Choisir un fichier
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setReceiptPhoto(e.target.files[0]);
-                                            setShowPhotoOptions(false);
-                                        }
-                                    }}
-                                    style={{ display: 'none' }}
-                                />
-                            </label>
-                        </div>
-                    )}
-                    
-                    {/* Aperçu de la photo */}
-                    {receiptPhoto && (
-                        <div className="photo-preview">
-                            <img 
-                                src={typeof receiptPhoto === 'string' ? receiptPhoto : URL.createObjectURL(receiptPhoto)} 
-                                alt="Reçu"
-                                className="receipt-thumbnail"
-                            />
-                            <button
-                                type="button"
-                                className="btn-remove-photo"
-                                onClick={() => setReceiptPhoto(null)}
-                                title="Supprimer"
-                            >
-                                ❌
-                            </button>
-                        </div>
-                    )}
-                </div>
+    if (editingTransaction) {
+      tx.id = editingTransaction.id;
+    }
 
-                {/* Catégorie */}
-                <div className="form-field">
-                    <label>Catégorie</label>
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="form-select"
-                    >
-                        {Object.entries(categories).map(([key, cat]) => (
-                            <option key={key} value={key}>
-                                {cat.icon} {cat.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+    onSubmit(tx);
 
-                {/* Date */}
-                <div className="form-field">
-                    <label>Date</label>
-                    <input
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="form-input"
-                        required
-                    />
-                </div>
+    setAmount("");
+    setVendor("");
+    setCategory("groceries");
+    setCustomAmounts(false);
+    setUserCustomAmount("");
+    setPartnerCustomAmount("");
+    setReceiptPhoto(null);
 
-                {/* Payeur (pour dépenses et transferts) */}
-                {(transactionType === 'expense' || transactionType === 'transfer') && (
-                    <div className="form-field">
-                        <label>{transactionType === 'expense' ? 'Payé par' : 'De'}</label>
-                        <select
-                            value={payer}
-                            onChange={(e) => setPayer(e.target.value)}
-                            className="form-select"
-                        >
-                            <option value={session.userName}>{session.userName}</option>
-                            <option value={session.partnerName}>{session.partnerName}</option>
-                        </select>
-                    </div>
-                )}
+    onCancelEdit?.();
+  };
 
-                {/* Bénéficiaire (pour revenus) */}
-                {transactionType === 'income' && (
-                    <div className="form-field">
-                        <label>Bénéficiaire</label>
-                        <select
-                            value={beneficiary}
-                            onChange={(e) => setBeneficiary(e.target.value)}
-                            className="form-select"
-                        >
-                            <option value={session.userName}>{session.userName}</option>
-                            <option value={session.partnerName}>{session.partnerName}</option>
-                        </select>
-                    </div>
-                )}
+  return (
+    <div className="transaction-form-container">
+      <h2>
+        {editingTransaction
+          ? "✏️ Modifier la transaction"
+          : "➕ Nouvelle transaction"}
+      </h2>
 
-                {/* Partage (pour dépenses uniquement) */}
-                {transactionType === 'expense' && (
-                    <>
-                        <div className="form-checkbox">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={isShared}
-                                    disabled={isPersonal}
-                                    onChange={(e) => {
-                                        setIsShared(e.target.checked);
-                                        if (!e.target.checked) {
-                                            setCustomAmounts(false);
-                                            setUserCustomAmount('');
-                                            setPartnerCustomAmount('');
-                                        }
-                                    }}
-                                />
-                                <span>Dépense partagée</span>
-                            </label>
-                        </div>
-
-                        {/* Montants personnalisés */}
-                        {isShared && (
-                            <div className="form-checkbox">
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={customAmounts}
-                                        onChange={(e) => {
-                                            setCustomAmounts(e.target.checked);
-                                            if (!e.target.checked) {
-                                                setUserCustomAmount('');
-                                                setPartnerCustomAmount('');
-                                            }
-                                        }}
-                                    />
-                                    <span>Montants personnalisés</span>
-                                </label>
-                            </div>
-                        )}
-
-                        {/* Champs montants personnalisés */}
-                        {isShared && customAmounts && (
-                            <div className="custom-amounts-grid">
-                                <div className="form-field">
-                                    <label>{session.userName}</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={userCustomAmount}
-                                        onChange={(e) => setUserCustomAmount(e.target.value)}
-                                        placeholder="0.00"
-                                        className="form-input"
-                                    />
-                                </div>
-                                <div className="form-field">
-                                    <label>{session.partnerName}</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={partnerCustomAmount}
-                                        onChange={(e) => setPartnerCustomAmount(e.target.value)}
-                                        placeholder="0.00"
-                                        className="form-input"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {/* Transaction personnelle */}
-                <div className="form-checkbox">
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={isPersonal}
-                            onChange={(e) => {
-                                setIsPersonal(e.target.checked);
-                                if (e.target.checked) {
-                                    setIsShared(false);
-                                    setCustomAmounts(false);
-                                    setUserCustomAmount('');
-                                    setPartnerCustomAmount('');
-                                }
-                            }}
-                        />
-                        <span>Transaction personnelle (visible uniquement par moi)</span>
-                    </label>
-                </div>
-
-                {/* Boutons soumettre */}
-                <div className="form-buttons">
-                    <button type="submit" className="btn-submit">
-                        {editingTransaction ? '✅ Enregistrer' : '✅ Ajouter'}
-                    </button>
-                    {editingTransaction && (
-                        <button 
-                            type="button" 
-                            className="btn-cancel"
-                            onClick={() => {
-                                setAmount('');
-                                setVendor('');
-                                setCategory('groceries');
-                                setCustomAmounts(false);
-                                setUserCustomAmount('');
-                                setPartnerCustomAmount('');
-                                setReceiptPhoto(null);
-                                if (onCancelEdit) {
-                                    onCancelEdit();
-                                }
-                            }}
-                        >
-                            ❌ Annuler
-                        </button>
-                    )}
-                </div>
-            </form>
+      <form
+        onSubmit={handleSubmit}
+        className="transaction-form"
+      >
+        {/* TYPE */}
+        <div className="form-type-selector">
+          {["expense", "income", "transfer"].map(
+            (type) => (
+              <button
+                key={type}
+                type="button"
+                className={
+                  "type-btn " +
+                  (transactionType === type
+                    ? "active"
+                    : "")
+                }
+                onClick={() =>
+                  setTransactionType(type)
+                }
+              >
+                {type === "expense" &&
+                  "💸 Dépense"}
+                {type === "income" &&
+                  "💰 Revenu"}
+                {type === "transfer" &&
+                  "🔄 Transfert"}
+              </button>
+            )
+          )}
         </div>
-    );
+
+        {/* MONTANT */}
+        <div className="form-field">
+          <label>
+            Montant ({session.currency})
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={amount}
+            onChange={(e) =>
+              setAmount(e.target.value)
+            }
+            className="form-input"
+            required
+          />
+        </div>
+
+        {/* VENDEUR + PHOTO */}
+        <div className="form-field">
+          <label>Vendeur</label>
+
+          <div className="vendor-input-container">
+            <input
+              type="text"
+              value={vendor}
+              onChange={(e) =>
+                setVendor(e.target.value)
+              }
+              className="form-input vendor-input"
+              required
+            />
+
+            <button
+              type="button"
+              className="btn-camera"
+              onClick={() =>
+                setShowPhotoOptions(
+                  !showPhotoOptions
+                )
+              }
+            >
+              📷
+            </button>
+          </div>
+
+          {showPhotoOptions && (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (
+                  e.target.files &&
+                  e.target.files[0]
+                ) {
+                  setReceiptPhoto(
+                    e.target.files[0]
+                  );
+                  setShowPhotoOptions(false);
+                }
+              }}
+            />
+          )}
+
+          {receiptPhoto && (
+            <div className="photo-preview">
+              <img
+                src={
+                  typeof receiptPhoto ===
+                  "string"
+                    ? receiptPhoto
+                    : URL.createObjectURL(
+                        receiptPhoto
+                      )
+                }
+                alt="Reçu"
+                className="receipt-thumbnail"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setReceiptPhoto(null)
+                }
+              >
+                ❌
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* CATÉGORIE */}
+        <div className="form-field">
+          <label>Catégorie</label>
+          <select
+            value={category}
+            onChange={(e) =>
+              setCategory(e.target.value)
+            }
+            className="form-select"
+          >
+            {Object.entries(categories).map(
+              ([key, cat]) => (
+                <option
+                  key={key}
+                  value={key}
+                >
+                  {cat.icon} {cat.name}
+                </option>
+              )
+            )}
+          </select>
+        </div>
+
+        {/* DATE */}
+        <div className="form-field">
+          <label>Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) =>
+              setDate(e.target.value)
+            }
+            className="form-input"
+            required
+          />
+        </div>
+
+        {/* PAYEUR */}
+        {(transactionType === "expense" ||
+          transactionType ===
+            "transfer") && (
+          <div className="form-field">
+            <label>Payé par</label>
+            <select
+              value={payer}
+              onChange={(e) =>
+                setPayer(e.target.value)
+              }
+              className="form-select"
+            >
+              <option
+                value={session.userName}
+              >
+                {session.userName}
+              </option>
+              <option
+                value={session.partnerName}
+              >
+                {session.partnerName}
+              </option>
+            </select>
+          </div>
+        )}
+
+        {/* PARTAGÉ */}
+        {transactionType === "expense" && (
+          <div className="form-checkbox">
+            <label>
+              <input
+                type="checkbox"
+                checked={isShared}
+                disabled={isPersonal}
+                onChange={(e) =>
+                  setIsShared(
+                    e.target.checked
+                  )
+                }
+              />
+              Dépense partagée
+            </label>
+          </div>
+        )}
+
+        {/* PERSONNEL */}
+        <div className="form-checkbox">
+          <label>
+            <input
+              type="checkbox"
+              checked={isPersonal}
+              onChange={(e) => {
+                const checked =
+                  e.target.checked;
+                setIsPersonal(checked);
+                if (checked) {
+                  setIsShared(false);
+                  setCustomAmounts(false);
+                }
+              }}
+            />
+            Transaction personnelle
+          </label>
+        </div>
+
+        {/* BOUTONS */}
+        <div className="form-buttons">
+          <button
+            type="submit"
+            className="btn-submit"
+          >
+            {editingTransaction
+              ? "✅ Enregistrer"
+              : "✅ Ajouter"}
+          </button>
+
+          {editingTransaction && (
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={() =>
+                onCancelEdit &&
+                onCancelEdit()
+              }
+            >
+              ❌ Annuler
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  );
 }
 
 export default TransactionForm;
