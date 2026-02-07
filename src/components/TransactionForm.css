@@ -371,3 +371,30 @@
   font-weight: bold;
   border-radius: 8px;
 }
+
+/* --- Compact mode léger --- */
+
+.transaction-form {
+gap: 6px;
+}
+
+.transaction-form .form-group {
+margin-bottom: 6px;
+}
+
+.transaction-form input,
+.transaction-form select {
+padding: 8px;
+}
+
+.transaction-form button {
+padding: 8px 12px;
+}
+.form-row {
+display: flex;
+gap: 8px;
+}
+
+.form-row > * {
+flex: 1;
+}

@@ -173,7 +173,7 @@ useEffect(() => {
       transactions.filter((tx) => !tx.isPersonal)
     );
   }, [transactions, selectedMonth]);
-  console.log("shared:", shared);
+
 
   const personal = useMemo(() => {
     return filterByMonth(personalTransactions);

@@ -1,6 +1,7 @@
 import { formatAmount, formatDate } from "../utils/formatters";
 import { useState } from "react";
 import "./TransactionList.css";
+import Summary from "./Summary";
 
 function TransactionList({ transactions, session, onEdit, categories }) {
 const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -10,10 +11,14 @@ return <p>Aucune transaction.</p>;
 }
 
 return (
-<> <div className="transactions-list">
-{transactions.map((tx) => ( <div key={tx.id} className="transaction-item-compact">
+<>
+<Summary session={session} categories={categories} />
 
-```
+
+
+  <div className="transactions-list">
+    {transactions.map((tx) => (
+      <div key={tx.id} className="transaction-item-compact">
         {/* MEDIA */}
         <div className="transaction-media">
           {tx.receiptPhoto ? (
@@ -24,8 +29,6 @@ return (
                 className="transaction-receipt-thumb"
                 onClick={() => setSelectedPhoto(tx.receiptPhoto)}
               />
-
-              {/* badge catégorie seulement si photo */}
               <div className="transaction-category-badge">
                 {categories?.[tx.category]?.icon || "📦"}
               </div>
@@ -52,24 +55,19 @@ return (
 
         {/* EDIT */}
         <button onClick={() => onEdit(tx)}>✏️</button>
-
       </div>
     ))}
   </div>
 
   {/* MODAL PHOTO */}
   {selectedPhoto && (
-    <div
-      className="photo-modal"
-      onClick={() => setSelectedPhoto(null)}
-    >
+    <div className="photo-modal" onClick={() => setSelectedPhoto(null)}>
       <img
         src={selectedPhoto}
         alt="Reçu"
         className="photo-modal-image"
         onClick={(e) => e.stopPropagation()}
       />
-
       <button
         className="photo-modal-close"
         onClick={() => setSelectedPhoto(null)}
@@ -79,7 +77,6 @@ return (
     </div>
   )}
 </>
-
 
 );
 }

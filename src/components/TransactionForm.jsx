@@ -309,23 +309,43 @@ function TransactionForm({
             </button>
           </div>
 
-          {showPhotoOptions && (
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (
-                  e.target.files &&
-                  e.target.files[0]
-                ) {
-                  setReceiptPhoto(
-                    e.target.files[0]
-                  );
-                  setShowPhotoOptions(false);
-                }
-              }}
-            />
-          )}
+         {showPhotoOptions && (
+  <div className="photo-options">
+
+    <label className="photo-option-btn">
+      📷 Prendre photo
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        multiple
+        hidden
+        onChange={(e) => {
+  if (e.target.files?.length) {
+    setReceiptPhoto(e.target.files[0]);
+    setShowPhotoOptions(false);
+  }
+}}
+      />
+    </label>
+
+    <label className="photo-option-btn">
+      🖼️ Galerie
+      <input
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          if (e.target.files?.[0]) {
+            setReceiptPhoto(e.target.files[0]);
+            setShowPhotoOptions(false);
+          }
+        }}
+      />
+    </label>
+
+  </div>
+)}
 
           {receiptPhoto && (
             <div className="photo-preview">
