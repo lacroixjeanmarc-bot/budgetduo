@@ -54,7 +54,14 @@ return (
         </div>
 
         {/* EDIT */}
-        <button onClick={() => onEdit(tx)}>✏️</button>
+        <button
+  onClick={() => {
+    console.log("Transaction envoyée en édition:", tx);
+    onEdit(tx);
+  }}
+>
+  ✏️
+</button>
       </div>
     ))}
   </div>

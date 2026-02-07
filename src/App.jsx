@@ -120,18 +120,19 @@ useEffect(() => {
   // ---------- NORMALISATION SAFE TX ----------
 
   const normalizeTransaction = (tx, isPersonal) => ({
-    id: tx.id || "",
-    type: tx.type || "expense",
-    category: tx.category || "",
-    amount: Number(tx.amount) || 0,
-    date: tx.date || "",
-    payer: tx.payer || session?.userName || "",
-    isShared: !!tx.isShared,
-    isPersonal,
-    userShare: Number(tx.userShare) || 0,
-    partnerShare: Number(tx.partnerShare) || 0,
-    vendor: tx.vendor || "",
-  });
+  id: tx.id || "",
+  type: tx.type || "expense",
+  category: tx.category || "",
+  amount: Number(tx.amount) || 0,
+  date: tx.date || "",
+  payer: tx.payer || session?.userName || "",
+  isShared: !!tx.isShared,
+  isPersonal,
+  userShare: Number(tx.userShare) || 0,
+  partnerShare: Number(tx.partnerShare) || 0,
+  vendor: tx.vendor || "",
+  receiptPhoto: tx.receiptPhoto || null,
+});
 
   // ---------- ADD / EDIT ----------
 

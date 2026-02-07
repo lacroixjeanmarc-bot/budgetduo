@@ -25,6 +25,15 @@ function TransactionForm({
   const [partnerCustomAmount, setPartnerCustomAmount] = useState("");
 
   const [receiptPhoto, setReceiptPhoto] = useState(null);
+ useEffect(() => {
+  if (!editingTransaction) {
+    setReceiptPhoto(null);
+    return;
+  }
+
+  setReceiptPhoto(editingTransaction.receiptPhoto ?? null);
+
+}, [editingTransaction?.id]);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
 
   // Date par défaut
@@ -39,6 +48,8 @@ function TransactionForm({
   // Charger transaction en édition
   useEffect(() => {
     if (!editingTransaction) return;
+
+    console.log("Editing transaction reçue:", editingTransaction);
 
     setTransactionType(editingTransaction.type || "expense");
     setAmount(
@@ -62,9 +73,14 @@ function TransactionForm({
         : editingTransaction.isShared === true
     );
 
-    setReceiptPhoto(
-      editingTransaction.receiptPhoto || null
-    );
+setReceiptPhoto(null);
+
+setTimeout(() => {
+  setReceiptPhoto(editingTransaction.receiptPhoto || null
+  );
+}, 0);
+
+
 
     if (
       editingTransaction.userShare != null &&
@@ -90,6 +106,9 @@ function TransactionForm({
       }
     }
   }, [editingTransaction, session.userName]);
+
+
+
 
   // Ajuster bénéficiaire pour transfert
   useEffect(() => {
@@ -150,22 +169,17 @@ function TransactionForm({
       return;
     }
 
-    let photoBase64 = null;
+   let photoBase64 = receiptPhoto;
 
-    if (
-      receiptPhoto &&
-      typeof receiptPhoto !== "string"
-    ) {
-      photoBase64 = await new Promise(
-        (resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () =>
-            resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(receiptPhoto);
-        }
-      );
-    }
+// Si nouvelle photo (File → base64)
+if (receiptPhoto && typeof receiptPhoto !== "string") {
+  photoBase64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(receiptPhoto);
+  });
+}
 
     const tx = {
       type: transactionType,
@@ -173,9 +187,10 @@ function TransactionForm({
       vendor: vendor.trim(),
       category,
       date,
-      timestamp: editingTransaction
-        ? editingTransaction.timestamp
-        : Date.now(),
+timestamp:
+  typeof editingTransaction?.timestamp === "number"
+    ? editingTransaction.timestamp
+    : Date.now(),
       payer,
       beneficiary,
       isShared:
@@ -183,10 +198,7 @@ function TransactionForm({
           ? isShared
           : false,
       isPersonal,
-      receiptPhoto:
-        photoBase64 ||
-        editingTransaction?.receiptPhoto ||
-        null,
+      receiptPhoto: photoBase64 ?? null,
     };
 
     if (
