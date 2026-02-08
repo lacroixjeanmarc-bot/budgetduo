@@ -67,9 +67,10 @@
 }
 
 .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+display: flex;
+flex-direction: column;
+gap: 6px;
+margin-top: 8px;
 }
 
 .form-field label {
