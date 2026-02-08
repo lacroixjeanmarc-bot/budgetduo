@@ -1,3 +1,7 @@
+/* ========================================
+   Transaction Form — Core Styles
+   ======================================== */
+
 .transaction-form-container {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
