@@ -74,14 +74,16 @@ margin-top: 8px;
 }
 
 .form-field label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    
 }
 
 .form-input,
 .form-select {
-    padding: 10px;
+    padding: 8px10px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -94,7 +96,7 @@ margin-top: 8px;
 .form-select:focus {
     outline: none;
     border-color: var(--accent);
-    background: var(--bg-secondary);
+    box-shadow: 0 0 0 1px var(--accent);
 }
 
 .form-input::placeholder {
@@ -217,28 +219,27 @@ margin-top: 8px;
 /* Container pour input vendeur + bouton caméra */
 .vendor-input-container {
     display: flex;
-    gap: 8px;
     align-items: stretch;
-}
-
-.vendor-input {
-    flex: 1;
-}
-
-.btn-camera {
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 1.3rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+..vendor-input {
+    border: none;
+    border-radius: 0;
+}
+
+..btn-camera {
+    width: 40px;
+    border: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+}
+.vendor-input-container .form-input {
+    height: 42px;
 }
 
 .btn-camera:hover {
@@ -358,7 +359,9 @@ margin-top: 8px;
 }
 
 .form-field {
-  margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .form-buttons {
@@ -397,4 +400,14 @@ gap: 8px;
 
 .form-row > * {
 flex: 1;
+}
+
+.transaction-form-container h2.title-new {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.transaction-form-container h2.title-edit {
+  color: var(--accent);
+  font-weight: 600;
 }

@@ -237,11 +237,11 @@ timestamp:
 
   return (
     <div className="transaction-form-container">
-      <h2>
-        {editingTransaction
-          ? "✏️ Modifier la transaction"
-          : "➕ Nouvelle transaction"}
-      </h2>
+<h2 className={editingTransaction ? "title-edit" : "title-new"}>
+  {editingTransaction
+    ? "Modifier la transaction"
+    : "Nouvelle transaction"}
+</h2>
 
       <form
         onSubmit={handleSubmit}
