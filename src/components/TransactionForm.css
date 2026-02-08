@@ -97,12 +97,13 @@
 }
 
 .form-checkbox {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-top: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }
 
 .form-checkbox label {
@@ -337,12 +338,6 @@
     .photo-options {
         flex-direction: column;
     }
-}
-.form-checkbox {
-  background: #2a2a2a;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 10px;
 }
 
 .form-checkbox label {
