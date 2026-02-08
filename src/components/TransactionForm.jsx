@@ -25,6 +25,8 @@ function TransactionForm({
   const [partnerCustomAmount, setPartnerCustomAmount] = useState("");
 
   const [receiptPhoto, setReceiptPhoto] = useState(null);
+
+  
  useEffect(() => {
   if (!editingTransaction) {
     setReceiptPhoto(null);
@@ -162,12 +164,14 @@ setTimeout(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!amount || !vendor || !date) {
-      alert(
-        "Veuillez remplir tous les champs obligatoires"
-      );
-      return;
-    }
+ if (
+  !amount ||
+  !date ||
+  (transactionType !== "transfer" && !vendor)
+) {
+  alert("Veuillez remplir tous les champs obligatoires");
+  return;
+}
 
    let photoBase64 = receiptPhoto;
 
@@ -235,11 +239,19 @@ timestamp:
     onCancelEdit?.();
   };
 
+  const showVendorFields =
+  transactionType !== "transfer";
   return (
     <div className="transaction-form-container">
 <h2 className={editingTransaction ? "title-edit" : "title-new"}>
   {editingTransaction
-    ? "Modifier la transaction"
+    ? `Modifier la transaction — ${
+        transactionType === "expense"
+          ? "Dépense"
+          : transactionType === "income"
+          ? "Revenu"
+          : "Transfert"
+      }`
     : "Nouvelle transaction"}
 </h2>
 
@@ -293,8 +305,9 @@ timestamp:
           />
         </div>
 
-        {/* VENDEUR + PHOTO */}
-        <div className="form-field">
+       {/* VENDEUR + PHOTO */}
+{showVendorFields && (
+<div className="form-field">
           <label>Vendeur</label>
 
           <div className="vendor-input-container">
@@ -384,9 +397,10 @@ timestamp:
             </div>
           )}
         </div>
-
+)}
         {/* CATÉGORIE */}
-        <div className="form-field">
+        {showVendorFields && (
+<div className="form-field">
           <label>Catégorie</label>
           <select
             value={category}
@@ -407,7 +421,7 @@ timestamp:
             )}
           </select>
         </div>
-
+)}
         {/* DATE */}
         <div className="form-field">
           <label>Date</label>

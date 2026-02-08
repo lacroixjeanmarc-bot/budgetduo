@@ -183,22 +183,37 @@ useEffect(() => {
   // ---------- BALANCE ----------
 
   const diff = useMemo(() => {
-    if (!session) return 0;
+  if (!session) return 0;
 
-    let balance = 0;
+  let balance = 0;
 
-    shared.forEach((tx) => {
-      if (tx.type !== "expense" || !tx.isShared) return;
+  shared.forEach((tx) => {
+
+    // --- Dépenses partagées ---
+    if (tx.type === "expense" && tx.isShared) {
+      const userShare = tx.userShare || tx.amount / 2;
+      const partnerShare = tx.partnerShare || tx.amount / 2;
 
       if (tx.payer === session.userName) {
-        balance += tx.partnerShare || 0;
+        balance += partnerShare;
       } else {
-        balance -= tx.userShare || 0;
+        balance -= userShare;
       }
-    });
+    }
 
-    return balance;
-  }, [shared, session]);
+    // --- Transferts ---
+    else if (tx.type === "transfer") {
+      if (tx.payer === session.userName) {
+        balance -= tx.amount;
+      } else {
+        balance += tx.amount;
+      }
+    }
+
+  });
+
+  return balance;
+}, [shared, session]);
 
   // ---------- SYNC CONTEXT ----------
 

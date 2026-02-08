@@ -6,47 +6,73 @@ import './Summary.css';
 function Summary({ session, categories }) {
   const { transactions } = useTransactions();
 
+  //console.log("transactions:", transactions);
+  console.error("SUMMARY RENDER", transactions);
+
     // Calcul des statistiques
     const stats = useMemo(() => {
         let totalExpenses = 0;
         let totalIncome = 0;
         let userExpenses = 0;
+        let transferAdjustment = 0;
         let partnerExpenses = 0;
         let personalExpenses = 0;
         let categoryTotals = {};
+        let netBalance = 0;
 
-        transactions.forEach(tx => {
-            if (tx.type === 'expense') {
-                totalExpenses += tx.amount;
-                
-                // Si c'est personnel
-                if (tx.isPersonal) {
-                    personalExpenses += tx.amount;
-                } else {
-                    // Calcul par personne pour les partagées
-                    if (tx.isShared) {
-                        userExpenses += tx.userShare || (tx.amount / 2);
-                        partnerExpenses += tx.partnerShare || (tx.amount / 2);
-                    } else {
-                        if (tx.payer === session.userName) {
-                            userExpenses += tx.amount;
-                        } else {
-                            partnerExpenses += tx.amount;
-                        }
-                    }
-                }
+       transactions.forEach(tx => {
 
-                // Par catégorie
-                const category = tx.category || 'other';
-                categoryTotals[category] = (categoryTotals[category] || 0) + tx.amount;
-            } else if (tx.type === 'income') {
-                totalIncome += tx.amount;
-            }
-        });
+    if (tx.type === 'expense') {
+        totalExpenses += tx.amount;
+
+        if (tx.isPersonal) {
+            personalExpenses += tx.amount;
+        } else {
+           if (tx.isShared) {
+    const userShare = tx.userShare || tx.amount / 2;
+    const partnerShare = tx.partnerShare || tx.amount / 2;
+
+    if (tx.payer === session.userName) {
+        netBalance += partnerShare;
+    } else {
+        netBalance -= userShare;
+    }
+
+    userExpenses += userShare;
+    partnerExpenses += partnerShare;
+}
+else {
+    // Dépense non partagée
+    if (tx.payer === session.userName) {
+        userExpenses += tx.amount;
+    } else {
+        partnerExpenses += tx.amount;
+    }
+}
+
+        }
+
+        const category = tx.category || 'other';
+        categoryTotals[category] =
+            (categoryTotals[category] || 0) + tx.amount;
+    }
+
+    else if (tx.type === 'income') {
+        totalIncome += tx.amount;
+    }
+
+    else if (tx.type === 'transfer') {
+    if (tx.payer === session.userName) {
+        netBalance -= tx.amount;
+    } else {
+        netBalance += tx.amount;
+    }
+}
+
+});
 
         const myTotalExpenses = personalExpenses + userExpenses;
-        const balance = totalIncome - myTotalExpenses;
-
+       const balance = netBalance;
         return {
             totalExpenses,
             totalIncome,
